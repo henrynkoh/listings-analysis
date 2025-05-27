@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seattle Real Estate Investment Analyzer</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="nav-brand">
+                <div class="logo">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Seattle REI</span>
+                </div>
+            </div>
+            
+            <!-- Desktop Navigation -->
+            <nav class="nav-desktop">
+                <ul class="nav-links">
+                    <li><a href="#home" class="nav-link active">Home</a></li>
+                    <li><a href="deals.html" class="nav-link">Top Deals</a></li>
+                    <li><a href="#analysis" class="nav-link">Analysis</a></li>
+                    <li><a href="#market" class="nav-link">Market Trends</a></li>
+                    <li><a href="#calculator" class="nav-link">ROI Calculator</a></li>
+                </ul>
+            </nav>
+            
+            <!-- Search Bar -->
+            <div class="search-container">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Search properties by location, price, or type...">
+                </div>
+            </div>
+            
+            <!-- Wishlist Icon -->
+            <div class="wishlist-container">
+                <button class="wishlist-btn" id="wishlistBtn">
+                    <i class="fas fa-heart"></i>
+                    <span class="wishlist-count" id="wishlistCount">0</span>
+                </button>
+            </div>
+            
+            <!-- Mobile Menu Toggle -->
+            <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+        
+        <!-- Mobile Navigation -->
+        <nav class="nav-mobile" id="navMobile">
+            <ul class="nav-links-mobile">
+                <li><a href="#home" class="nav-link-mobile">Home</a></li>
+                <li><a href="deals.html" class="nav-link-mobile">Top Deals</a></li>
+                <li><a href="#analysis" class="nav-link-mobile">Analysis</a></li>
+                <li><a href="#market" class="nav-link-mobile">Market Trends</a></li>
+                <li><a href="#calculator" class="nav-link-mobile">ROI Calculator</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Hero Banner -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="container">
+                <h1 class="hero-title">Smart Real Estate Investment Analysis</h1>
+                <p class="hero-subtitle">Discover profitable investment opportunities in Greater Seattle with comprehensive ROI analysis, market trends, and cash flow projections</p>
+                <div class="hero-stats">
+                    <div class="stat">
+                        <div class="stat-number">$2.3M</div>
+                        <div class="stat-label">Avg Property Value</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">8.5%</div>
+                        <div class="stat-label">Avg ROI</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">1,247</div>
+                        <div class="stat-label">Active Listings</div>
+                    </div>
+                </div>
+                <button class="cta-button">Start Analyzing Properties</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Filters and Controls -->
+    <section class="filters-section">
+        <div class="container">
+            <div class="filters-container">
+                <div class="filter-group">
+                    <label for="categoryFilter">Category:</label>
+                    <select id="categoryFilter" class="filter-select">
+                        <option value="all">All Properties</option>
+                        <option value="single-family">Single Family</option>
+                        <option value="condo">Condo</option>
+                        <option value="townhouse">Townhouse</option>
+                        <option value="multi-family">Multi-Family</option>
+                        <option value="commercial">Commercial</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="sortFilter">Sort by:</label>
+                    <select id="sortFilter" class="filter-select">
+                        <option value="price-low">Price: Low to High</option>
+                        <option value="price-high">Price: High to Low</option>
+                        <option value="roi-high">ROI: High to Low</option>
+                        <option value="cashflow-high">Cash Flow: High to Low</option>
+                        <option value="sqft-high">Size: Large to Small</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="priceRange">Price Range:</label>
+                    <select id="priceRange" class="filter-select">
+                        <option value="all">All Prices</option>
+                        <option value="0-500000">Under $500K</option>
+                        <option value="500000-1000000">$500K - $1M</option>
+                        <option value="1000000-2000000">$1M - $2M</option>
+                        <option value="2000000-5000000">$2M - $5M</option>
+                        <option value="5000000+">$5M+</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Properties Grid -->
+    <section class="properties-section" id="properties">
+        <div class="container">
+            <h2 class="section-title">Investment Properties</h2>
+            <div class="properties-grid" id="propertiesGrid">
+                <!-- Properties will be dynamically loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Wishlist Modal -->
+    <div class="modal" id="wishlistModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>My Investment Wishlist</h3>
+                <button class="modal-close" id="modalClose">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="wishlist-summary">
+                    <div class="summary-item">
+                        <span>Total Properties:</span>
+                        <span id="totalProperties">0</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Total Investment:</span>
+                        <span id="totalInvestment">$0</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Expected Monthly Cash Flow:</span>
+                        <span id="totalCashFlow">$0</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Average ROI:</span>
+                        <span id="averageROI">0%</span>
+                    </div>
+                </div>
+                <div class="wishlist-items" id="wishlistItems">
+                    <!-- Wishlist items will be displayed here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Property Detail Modal -->
+    <div class="modal" id="propertyModal">
+        <div class="modal-content property-modal-content">
+            <div class="modal-header">
+                <h3 id="propertyModalTitle">Property Details</h3>
+                <button class="modal-close" id="propertyModalClose">&times;</button>
+            </div>
+            <div class="modal-body" id="propertyModalBody">
+                <!-- Property details will be displayed here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 

@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market Trends - Seattle Real Estate Investment Analyzer</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="market-trends.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="nav-brand">
+                <div class="logo">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Seattle REI</span>
+                </div>
+            </div>
+            
+            <!-- Desktop Navigation -->
+            <nav class="nav-desktop">
+                <ul class="nav-links">
+                    <li><a href="index.html" class="nav-link">Home</a></li>
+                    <li><a href="deals.html" class="nav-link">Top Deals</a></li>
+                    <li><a href="analysis.html" class="nav-link">Analysis</a></li>
+                    <li><a href="market-trends.html" class="nav-link active">Market Trends</a></li>
+                    <li><a href="roi-calculator.html" class="nav-link">ROI Calculator</a></li>
+                </ul>
+            </nav>
+            
+            <!-- Search Bar -->
+            <div class="search-container">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Search by MLS#, address, or area...">
+                </div>
+            </div>
+            
+            <!-- Wishlist Icon -->
+            <div class="wishlist-container">
+                <button class="wishlist-btn" id="wishlistBtn">
+                    <i class="fas fa-heart"></i>
+                    <span class="wishlist-count" id="wishlistCount">0</span>
+                </button>
+            </div>
+            
+            <!-- Mobile Menu Toggle -->
+            <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+        
+        <!-- Mobile Navigation -->
+        <nav class="nav-mobile" id="navMobile">
+            <ul class="nav-links-mobile">
+                <li><a href="index.html" class="nav-link-mobile">Home</a></li>
+                <li><a href="deals.html" class="nav-link-mobile">Top Deals</a></li>
+                <li><a href="analysis.html" class="nav-link-mobile">Analysis</a></li>
+                <li><a href="market-trends.html" class="nav-link-mobile">Market Trends</a></li>
+                <li><a href="roi-calculator.html" class="nav-link-mobile">ROI Calculator</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Hero Banner -->
+    <section class="hero trends-hero">
+        <div class="hero-content">
+            <div class="container">
+                <h1 class="hero-title">Seattle Market Trends</h1>
+                <p class="hero-subtitle">Real-time market data, forecasts, and insights for Greater Seattle real estate investment</p>
+                <div class="hero-stats">
+                    <div class="stat">
+                        <div class="stat-number trending-up">+8.2%</div>
+                        <div class="stat-label">YoY Price Growth</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">$847K</div>
+                        <div class="stat-label">Median Home Price</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number trending-down">-15%</div>
+                        <div class="stat-label">Inventory Change</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">42</div>
+                        <div class="stat-label">Days on Market</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Market Overview -->
+    <section class="market-overview">
+        <div class="container">
+            <div class="overview-grid">
+                <div class="overview-card primary">
+                    <div class="card-header">
+                        <h3>Market Temperature</h3>
+                        <div class="temperature-indicator hot">
+                            <i class="fas fa-thermometer-three-quarters"></i>
+                            <span>Hot Market</span>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <div class="temperature-details">
+                            <div class="temp-item">
+                                <span class="temp-label">Buyer Demand:</span>
+                                <div class="temp-bar">
+                                    <div class="temp-fill" style="width: 85%"></div>
+                                </div>
+                                <span class="temp-value">High</span>
+                            </div>
+                            <div class="temp-item">
+                                <span class="temp-label">Inventory:</span>
+                                <div class="temp-bar">
+                                    <div class="temp-fill low" style="width: 25%"></div>
+                                </div>
+                                <span class="temp-value">Low</span>
+                            </div>
+                            <div class="temp-item">
+                                <span class="temp-label">Price Growth:</span>
+                                <div class="temp-bar">
+                                    <div class="temp-fill" style="width: 75%"></div>
+                                </div>
+                                <span class="temp-value">Strong</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="overview-card">
+                    <div class="card-header">
+                        <h3>Key Metrics</h3>
+                        <select id="metricsTimeframe" class="timeframe-select">
+                            <option value="month">This Month</option>
+                            <option value="quarter" selected>This Quarter</option>
+                            <option value="year">This Year</option>
+                        </select>
+                    </div>
+                    <div class="card-content">
+                        <div class="metrics-grid">
+                            <div class="metric-box">
+                                <div class="metric-icon">
+                                    <i class="fas fa-home"></i>
+                                </div>
+                                <div class="metric-data">
+                                    <div class="metric-value">1,247</div>
+                                    <div class="metric-label">Active Listings</div>
+                                    <div class="metric-change negative">-12.3%</div>
+                                </div>
+                            </div>
+                            <div class="metric-box">
+                                <div class="metric-icon">
+                                    <i class="fas fa-handshake"></i>
+                                </div>
+                                <div class="metric-data">
+                                    <div class="metric-value">892</div>
+                                    <div class="metric-label">Sales Volume</div>
+                                    <div class="metric-change positive">+5.7%</div>
+                                </div>
+                            </div>
+                            <div class="metric-box">
+                                <div class="metric-icon">
+                                    <i class="fas fa-percentage"></i>
+                                </div>
+                                <div class="metric-data">
+                                    <div class="metric-value">94%</div>
+                                    <div class="metric-label">Sale to List Ratio</div>
+                                    <div class="metric-change positive">+2.1%</div>
+                                </div>
+                            </div>
+                            <div class="metric-box">
+                                <div class="metric-icon">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div class="metric-data">
+                                    <div class="metric-value">42</div>
+                                    <div class="metric-label">Avg Days on Market</div>
+                                    <div class="metric-change negative">-8 days</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Price Trends Chart -->
+    <section class="price-trends">
+        <div class="container">
+            <div class="trends-card">
+                <div class="card-header">
+                    <h2>Price Trends by Area</h2>
+                    <div class="chart-controls">
+                        <select id="areaSelect" class="area-select">
+                            <option value="all">All Areas</option>
+                            <option value="seattle">Seattle</option>
+                            <option value="bellevue">Bellevue</option>
+                            <option value="redmond">Redmond</option>
+                            <option value="kirkland">Kirkland</option>
+                        </select>
+                        <select id="timeRange" class="time-select">
+                            <option value="6m">6 Months</option>
+                            <option value="1y" selected>1 Year</option>
+                            <option value="2y">2 Years</option>
+                            <option value="5y">5 Years</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div class="chart-container">
+                        <canvas id="priceChart" width="800" height="400"></canvas>
+                    </div>
+                    <div class="chart-legend">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #667eea;"></div>
+                            <span>Median Price</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #48bb78;"></div>
+                            <span>Price per Sq Ft</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #f56565;"></div>
+                            <span>Rental Yield</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Neighborhood Spotlight -->
+    <section class="neighborhood-spotlight">
+        <div class="container">
+            <h2 class="section-title">Neighborhood Spotlight</h2>
+            <div class="spotlight-grid">
+                <div class="spotlight-card hot">
+                    <div class="spotlight-badge">🔥 Hot</div>
+                    <div class="spotlight-image">
+                        <img src="https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=300&h=200&fit=crop" alt="Capitol Hill">
+                    </div>
+                    <div class="spotlight-content">
+                        <h3>Capitol Hill</h3>
+                        <div class="spotlight-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Median Price:</span>
+                                <span class="stat-value">$925K</span>
+                                <span class="stat-change positive">+15.2%</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Avg ROI:</span>
+                                <span class="stat-value">14.8%</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Days on Market:</span>
+                                <span class="stat-value">28 days</span>
+                            </div>
+                        </div>
+                        <p class="spotlight-description">High demand area with strong rental market and excellent walkability scores.</p>
+                    </div>
+                </div>
+
+                <div class="spotlight-card emerging">
+                    <div class="spotlight-badge">📈 Emerging</div>
+                    <div class="spotlight-image">
+                        <img src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=300&h=200&fit=crop" alt="Georgetown">
+                    </div>
+                    <div class="spotlight-content">
+                        <h3>Georgetown</h3>
+                        <div class="spotlight-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Median Price:</span>
+                                <span class="stat-value">$675K</span>
+                                <span class="stat-change positive">+22.1%</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Avg ROI:</span>
+                                <span class="stat-value">18.2%</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Days on Market:</span>
+                                <span class="stat-value">35 days</span>
+                            </div>
+                        </div>
+                        <p class="spotlight-description">Rapidly developing area with new infrastructure and growing tech presence.</p>
+                    </div>
+                </div>
+
+                <div class="spotlight-card stable">
+                    <div class="spotlight-badge">💎 Stable</div>
+                    <div class="spotlight-image">
+                        <img src="https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=300&h=200&fit=crop" alt="Bellevue">
+                    </div>
+                    <div class="spotlight-content">
+                        <h3>Bellevue</h3>
+                        <div class="spotlight-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Median Price:</span>
+                                <span class="stat-value">$1.2M</span>
+                                <span class="stat-change positive">+6.8%</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Avg ROI:</span>
+                                <span class="stat-value">11.5%</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Days on Market:</span>
+                                <span class="stat-value">45 days</span>
+                            </div>
+                        </div>
+                        <p class="spotlight-description">Established market with consistent growth and high-quality schools.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Market Forecast -->
+    <section class="market-forecast">
+        <div class="container">
+            <div class="forecast-grid">
+                <div class="forecast-card">
+                    <div class="card-header">
+                        <h3>6-Month Forecast</h3>
+                        <div class="forecast-confidence">
+                            <span>Confidence: 85%</span>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <div class="forecast-chart">
+                            <canvas id="forecastChart" width="400" height="200"></canvas>
+                        </div>
+                        <div class="forecast-summary">
+                            <div class="forecast-item">
+                                <div class="forecast-icon positive">
+                                    <i class="fas fa-arrow-up"></i>
+                                </div>
+                                <div class="forecast-text">
+                                    <div class="forecast-title">Price Growth</div>
+                                    <div class="forecast-value">+4.2% to +6.8%</div>
+                                </div>
+                            </div>
+                            <div class="forecast-item">
+                                <div class="forecast-icon negative">
+                                    <i class="fas fa-arrow-down"></i>
+                                </div>
+                                <div class="forecast-text">
+                                    <div class="forecast-title">Inventory</div>
+                                    <div class="forecast-value">-8% to -12%</div>
+                                </div>
+                            </div>
+                            <div class="forecast-item">
+                                <div class="forecast-icon stable">
+                                    <i class="fas fa-minus"></i>
+                                </div>
+                                <div class="forecast-text">
+                                    <div class="forecast-title">Interest Rates</div>
+                                    <div class="forecast-value">6.25% to 6.75%</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="forecast-card">
+                    <div class="card-header">
+                        <h3>Market Drivers</h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="drivers-list">
+                            <div class="driver-item positive">
+                                <div class="driver-icon">
+                                    <i class="fas fa-briefcase"></i>
+                                </div>
+                                <div class="driver-content">
+                                    <div class="driver-title">Tech Job Growth</div>
+                                    <div class="driver-description">Amazon, Microsoft expansion driving demand</div>
+                                    <div class="driver-impact">High Impact</div>
+                                </div>
+                            </div>
+                            <div class="driver-item positive">
+                                <div class="driver-icon">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <div class="driver-content">
+                                    <div class="driver-title">Population Growth</div>
+                                    <div class="driver-description">Net migration continues at 2.1% annually</div>
+                                    <div class="driver-impact">Medium Impact</div>
+                                </div>
+                            </div>
+                            <div class="driver-item negative">
+                                <div class="driver-icon">
+                                    <i class="fas fa-hammer"></i>
+                                </div>
+                                <div class="driver-content">
+                                    <div class="driver-title">Construction Delays</div>
+                                    <div class="driver-description">Supply chain issues limiting new inventory</div>
+                                    <div class="driver-impact">Medium Impact</div>
+                                </div>
+                            </div>
+                            <div class="driver-item neutral">
+                                <div class="driver-icon">
+                                    <i class="fas fa-percent"></i>
+                                </div>
+                                <div class="driver-content">
+                                    <div class="driver-title">Interest Rate Policy</div>
+                                    <div class="driver-description">Fed maintaining current stance</div>
+                                    <div class="driver-impact">Low Impact</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Wishlist Modal -->
+    <div class="modal" id="wishlistModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>My Investment Wishlist</h3>
+                <button class="modal-close" id="modalClose">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="wishlist-summary">
+                    <div class="summary-item">
+                        <span>Total Properties:</span>
+                        <span id="totalProperties">0</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Total Investment:</span>
+                        <span id="totalInvestment">$0</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Expected Monthly Cash Flow:</span>
+                        <span id="totalCashFlow">$0</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Average ROI:</span>
+                        <span id="averageROI">0%</span>
+                    </div>
+                </div>
+                <div class="wishlist-items" id="wishlistItems">
+                    <!-- Wishlist items will be displayed here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="market-trends.js"></script>
+</body>
+</html> 

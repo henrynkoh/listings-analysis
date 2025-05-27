@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top 100 Deals - Seattle Real Estate Investment Analyzer</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="deals.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="nav-brand">
+                <div class="logo">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Seattle REI</span>
+                </div>
+            </div>
+            
+            <!-- Desktop Navigation -->
+            <nav class="nav-desktop">
+                <ul class="nav-links">
+                    <li><a href="index.html" class="nav-link">Home</a></li>
+                    <li><a href="deals.html" class="nav-link active">Top Deals</a></li>
+                    <li><a href="#analysis" class="nav-link">Analysis</a></li>
+                    <li><a href="#market" class="nav-link">Market Trends</a></li>
+                    <li><a href="#calculator" class="nav-link">ROI Calculator</a></li>
+                </ul>
+            </nav>
+            
+            <!-- Search Bar -->
+            <div class="search-container">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Search by MLS#, address, or area...">
+                </div>
+            </div>
+            
+            <!-- Wishlist Icon -->
+            <div class="wishlist-container">
+                <button class="wishlist-btn" id="wishlistBtn">
+                    <i class="fas fa-heart"></i>
+                    <span class="wishlist-count" id="wishlistCount">0</span>
+                </button>
+            </div>
+            
+            <!-- Mobile Menu Toggle -->
+            <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+        
+        <!-- Mobile Navigation -->
+        <nav class="nav-mobile" id="navMobile">
+            <ul class="nav-links-mobile">
+                <li><a href="index.html" class="nav-link-mobile">Home</a></li>
+                <li><a href="deals.html" class="nav-link-mobile">Top Deals</a></li>
+                <li><a href="#analysis" class="nav-link-mobile">Analysis</a></li>
+                <li><a href="#market" class="nav-link-mobile">Market Trends</a></li>
+                <li><a href="#calculator" class="nav-link-mobile">ROI Calculator</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Hero Banner -->
+    <section class="hero deals-hero">
+        <div class="hero-content">
+            <div class="container">
+                <h1 class="hero-title">Top 100 Investment Deals</h1>
+                <p class="hero-subtitle">Daily analysis of new NWMLS listings ranked by Rent to PITI Ratio for maximum cash flow potential</p>
+                <div class="hero-stats">
+                    <div class="stat">
+                        <div class="stat-number" id="totalListings">100</div>
+                        <div class="stat-label">New Listings Analyzed</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number" id="avgRentToPiti">125%</div>
+                        <div class="stat-label">Avg Rent to PITI</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number" id="topDeals">23</div>
+                        <div class="stat-label">Cash Flow Positive</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number" id="lastUpdated">Today</div>
+                        <div class="stat-label">Last Updated</div>
+                    </div>
+                </div>
+                <div class="hero-actions">
+                    <button class="cta-button" id="refreshData">
+                        <i class="fas fa-sync-alt"></i>
+                        Refresh Analysis
+                    </button>
+                    <button class="cta-button secondary" id="exportData">
+                        <i class="fas fa-download"></i>
+                        Export to CSV
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Analysis Controls -->
+    <section class="analysis-controls">
+        <div class="container">
+            <div class="controls-grid">
+                <div class="control-group">
+                    <label for="minRentToPiti">Min Rent to PITI Ratio:</label>
+                    <select id="minRentToPiti" class="control-select">
+                        <option value="0">All Ratios</option>
+                        <option value="100">100%+</option>
+                        <option value="110" selected>110%+</option>
+                        <option value="120">120%+</option>
+                        <option value="130">130%+</option>
+                        <option value="150">150%+</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label for="propertyType">Property Type:</label>
+                    <select id="propertyType" class="control-select">
+                        <option value="all">All Types</option>
+                        <option value="RESI">Residential</option>
+                        <option value="COND">Condo</option>
+                        <option value="RENT">Rental</option>
+                        <option value="VACL">Vacant Land</option>
+                        <option value="MANU">Manufactured</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label for="priceRange">Price Range:</label>
+                    <select id="priceRange" class="control-select">
+                        <option value="all">All Prices</option>
+                        <option value="0-300000">Under $300K</option>
+                        <option value="300000-500000">$300K - $500K</option>
+                        <option value="500000-750000">$500K - $750K</option>
+                        <option value="750000-1000000">$750K - $1M</option>
+                        <option value="1000000-1500000">$1M - $1.5M</option>
+                        <option value="1500000+">$1.5M+</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label for="area">Area:</label>
+                    <select id="area" class="control-select">
+                        <option value="all">All Areas</option>
+                        <option value="Seattle">Seattle</option>
+                        <option value="Bellevue">Bellevue</option>
+                        <option value="Redmond">Redmond</option>
+                        <option value="Kirkland">Kirkland</option>
+                        <option value="Bothell">Bothell</option>
+                        <option value="Everett">Everett</option>
+                        <option value="Tacoma">Tacoma</option>
+                        <option value="Renton">Renton</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label for="sortBy">Sort By:</label>
+                    <select id="sortBy" class="control-select">
+                        <option value="rentToPiti" selected>Rent to PITI Ratio</option>
+                        <option value="cashFlow">Cash Flow</option>
+                        <option value="roi">ROI</option>
+                        <option value="capRate">Cap Rate</option>
+                        <option value="price">Price</option>
+                        <option value="listDate">List Date</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label for="resultsCount">Show Results:</label>
+                    <select id="resultsCount" class="control-select">
+                        <option value="25">Top 25</option>
+                        <option value="50">Top 50</option>
+                        <option value="100" selected>Top 100</option>
+                        <option value="200">Top 200</option>
+                        <option value="all">All Results</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label for="multiFamily">Multi-Family:</label>
+                    <select id="multiFamily" class="control-select">
+                        <option value="all">All</option>
+                        <option value="yes">Yes</option>
+                        <option value="no">No</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label for="detached">Detached:</label>
+                    <select id="detached" class="control-select">
+                        <option value="all">All</option>
+                        <option value="yes">Yes</option>
+                        <option value="no">No</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label for="largeGarage">Large Garage:</label>
+                    <select id="largeGarage" class="control-select">
+                        <option value="all">All</option>
+                        <option value="yes">Yes</option>
+                        <option value="no">No</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Deals Summary -->
+    <section class="deals-summary">
+        <div class="container">
+            <div class="summary-cards">
+                <div class="summary-card">
+                    <div class="summary-icon">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <div class="summary-content">
+                        <div class="summary-number" id="bestDealRatio">156%</div>
+                        <div class="summary-label">Best Rent to PITI</div>
+                        <div class="summary-detail" id="bestDealAddress">3677 SE Chesterton Dr</div>
+                    </div>
+                </div>
+                
+                <div class="summary-card">
+                    <div class="summary-icon">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    <div class="summary-content">
+                        <div class="summary-number" id="highestCashFlow">$1,250</div>
+                        <div class="summary-label">Highest Cash Flow</div>
+                        <div class="summary-detail" id="highestCashFlowAddress">8627 25th Ave #B</div>
+                    </div>
+                </div>
+                
+                <div class="summary-card">
+                    <div class="summary-icon">
+                        <i class="fas fa-percentage"></i>
+                    </div>
+                    <div class="summary-content">
+                        <div class="summary-number" id="bestROI">18.5%</div>
+                        <div class="summary-label">Best ROI</div>
+                        <div class="summary-detail" id="bestROIAddress">94 Brazil Rd</div>
+                    </div>
+                </div>
+                
+                <div class="summary-card">
+                    <div class="summary-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="summary-content">
+                        <div class="summary-number" id="avgPrice">$687K</div>
+                        <div class="summary-label">Average Price</div>
+                        <div class="summary-detail">Top 100 Deals</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Deals Table -->
+    <section class="deals-section">
+        <div class="container">
+            <div class="deals-header">
+                <h2 class="section-title">Investment Deals Analysis</h2>
+                <div class="deals-actions">
+                    <button class="btn btn-secondary" id="selectAll">
+                        <i class="fas fa-check-square"></i>
+                        Select All
+                    </button>
+                    <button class="btn btn-primary" id="addSelectedToWishlist">
+                        <i class="fas fa-heart"></i>
+                        Add Selected to Wishlist
+                    </button>
+                </div>
+            </div>
+            
+            <div class="table-container">
+                <table class="deals-table" id="dealsTable">
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox" id="selectAllCheckbox"></th>
+                            <th>Rank</th>
+                            <th>MLS#</th>
+                            <th>Address</th>
+                            <th>Area</th>
+                            <th>Type</th>
+                            <th>Multi-Family</th>
+                            <th>Detached</th>
+                            <th>Large Garage</th>
+                            <th>Price</th>
+                            <th>Est. Rent</th>
+                            <th>PITI</th>
+                            <th>Rent/PITI</th>
+                            <th>Cash Flow</th>
+                            <th>ROI</th>
+                            <th>Cap Rate</th>
+                            <th>List Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dealsTableBody">
+                        <!-- Deals will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="pagination" id="pagination">
+                <!-- Pagination will be generated here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Deal Detail Modal -->
+    <div class="modal" id="dealModal">
+        <div class="modal-content deal-modal-content">
+            <div class="modal-header">
+                <h3 id="dealModalTitle">Deal Analysis</h3>
+                <button class="modal-close" id="dealModalClose">&times;</button>
+            </div>
+            <div class="modal-body" id="dealModalBody">
+                <!-- Deal details will be displayed here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Wishlist Modal -->
+    <div class="modal" id="wishlistModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>My Investment Wishlist</h3>
+                <button class="modal-close" id="modalClose">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="wishlist-summary">
+                    <div class="summary-item">
+                        <span>Total Properties:</span>
+                        <span id="totalProperties">0</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Total Investment:</span>
+                        <span id="totalInvestment">$0</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Expected Monthly Cash Flow:</span>
+                        <span id="totalCashFlow">$0</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Average ROI:</span>
+                        <span id="averageROI">0%</span>
+                    </div>
+                </div>
+                <div class="wishlist-items" id="wishlistItems">
+                    <!-- Wishlist items will be displayed here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="deals.js"></script>
+</body>
+</html> 

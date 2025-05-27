@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ROI Calculator - Seattle Real Estate Investment Analyzer</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="roi-calculator.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="nav-brand">
+                <div class="logo">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Seattle REI</span>
+                </div>
+            </div>
+            
+            <!-- Desktop Navigation -->
+            <nav class="nav-desktop">
+                <ul class="nav-links">
+                    <li><a href="index.html" class="nav-link">Home</a></li>
+                    <li><a href="deals.html" class="nav-link">Top Deals</a></li>
+                    <li><a href="analysis.html" class="nav-link">Analysis</a></li>
+                    <li><a href="market-trends.html" class="nav-link">Market Trends</a></li>
+                    <li><a href="roi-calculator.html" class="nav-link active">ROI Calculator</a></li>
+                </ul>
+            </nav>
+            
+            <!-- Search Bar -->
+            <div class="search-container">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Search by MLS#, address, or area...">
+                </div>
+            </div>
+            
+            <!-- Wishlist Icon -->
+            <div class="wishlist-container">
+                <button class="wishlist-btn" id="wishlistBtn">
+                    <i class="fas fa-heart"></i>
+                    <span class="wishlist-count" id="wishlistCount">0</span>
+                </button>
+            </div>
+            
+            <!-- Mobile Menu Toggle -->
+            <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+        
+        <!-- Mobile Navigation -->
+        <nav class="nav-mobile" id="navMobile">
+            <ul class="nav-links-mobile">
+                <li><a href="index.html" class="nav-link-mobile">Home</a></li>
+                <li><a href="deals.html" class="nav-link-mobile">Top Deals</a></li>
+                <li><a href="analysis.html" class="nav-link-mobile">Analysis</a></li>
+                <li><a href="market-trends.html" class="nav-link-mobile">Market Trends</a></li>
+                <li><a href="roi-calculator.html" class="nav-link-mobile">ROI Calculator</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Hero Banner -->
+    <section class="hero calculator-hero">
+        <div class="hero-content">
+            <div class="container">
+                <h1 class="hero-title">Investment ROI Calculator</h1>
+                <p class="hero-subtitle">Calculate returns, cash flow, and investment metrics for Seattle real estate properties</p>
+                <div class="hero-features">
+                    <div class="feature">
+                        <i class="fas fa-calculator"></i>
+                        <span>Real-time Calculations</span>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-chart-pie"></i>
+                        <span>Multiple Scenarios</span>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-download"></i>
+                        <span>Export Reports</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Calculator Section -->
+    <section class="calculator-section">
+        <div class="container">
+            <div class="calculator-grid">
+                <!-- Input Form -->
+                <div class="calculator-form">
+                    <div class="form-header">
+                        <h2>Property Details</h2>
+                        <div class="form-tabs">
+                            <button class="tab-btn active" data-tab="basic">Basic Info</button>
+                            <button class="tab-btn" data-tab="financing">Financing</button>
+                            <button class="tab-btn" data-tab="expenses">Expenses</button>
+                            <button class="tab-btn" data-tab="income">Income</button>
+                        </div>
+                    </div>
+
+                    <!-- Basic Info Tab -->
+                    <div class="tab-content active" id="basic-tab">
+                        <div class="form-group">
+                            <label for="propertyPrice">Property Price</label>
+                            <div class="input-group">
+                                <span class="input-prefix">$</span>
+                                <input type="number" id="propertyPrice" placeholder="750,000" value="750000">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="propertyType">Property Type</label>
+                            <select id="propertyType">
+                                <option value="single-family">Single Family Home</option>
+                                <option value="condo">Condominium</option>
+                                <option value="townhouse">Townhouse</option>
+                                <option value="multi-family">Multi-Family</option>
+                                <option value="commercial">Commercial</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="location">Location</label>
+                            <select id="location">
+                                <option value="seattle">Seattle</option>
+                                <option value="bellevue">Bellevue</option>
+                                <option value="redmond">Redmond</option>
+                                <option value="kirkland">Kirkland</option>
+                                <option value="bothell">Bothell</option>
+                                <option value="everett">Everett</option>
+                                <option value="tacoma">Tacoma</option>
+                                <option value="renton">Renton</option>
+                            </select>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="bedrooms">Bedrooms</label>
+                                <input type="number" id="bedrooms" value="3" min="1" max="10">
+                            </div>
+                            <div class="form-group">
+                                <label for="bathrooms">Bathrooms</label>
+                                <input type="number" id="bathrooms" value="2" min="1" max="10" step="0.5">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="squareFootage">Square Footage</label>
+                            <input type="number" id="squareFootage" placeholder="1,500" value="1500">
+                        </div>
+                    </div>
+
+                    <!-- Financing Tab -->
+                    <div class="tab-content" id="financing-tab">
+                        <div class="form-group">
+                            <label for="downPayment">Down Payment</label>
+                            <div class="input-group">
+                                <span class="input-prefix">$</span>
+                                <input type="number" id="downPayment" placeholder="150,000" value="187500">
+                                <span class="input-suffix">
+                                    <span id="downPaymentPercent">25%</span>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="interestRate">Interest Rate</label>
+                            <div class="input-group">
+                                <input type="number" id="interestRate" placeholder="6.5" value="6.5" step="0.1">
+                                <span class="input-suffix">%</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="loanTerm">Loan Term</label>
+                            <select id="loanTerm">
+                                <option value="15">15 years</option>
+                                <option value="20">20 years</option>
+                                <option value="25">25 years</option>
+                                <option value="30" selected>30 years</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="closingCosts">Closing Costs</label>
+                            <div class="input-group">
+                                <span class="input-prefix">$</span>
+                                <input type="number" id="closingCosts" placeholder="15,000" value="15000">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="renovationCosts">Renovation Costs</label>
+                            <div class="input-group">
+                                <span class="input-prefix">$</span>
+                                <input type="number" id="renovationCosts" placeholder="25,000" value="0">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Expenses Tab -->
+                    <div class="tab-content" id="expenses-tab">
+                        <div class="form-group">
+                            <label for="propertyTaxes">Property Taxes (Annual)</label>
+                            <div class="input-group">
+                                <span class="input-prefix">$</span>
+                                <input type="number" id="propertyTaxes" placeholder="6,900" value="6900">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="insurance">Insurance (Annual)</label>
+                            <div class="input-group">
+                                <span class="input-prefix">$</span>
+                                <input type="number" id="insurance" placeholder="1,200" value="1200">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="hoaFees">HOA Fees (Monthly)</label>
+                            <div class="input-group">
+                                <span class="input-prefix">$</span>
+                                <input type="number" id="hoaFees" placeholder="200" value="0">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="maintenance">Maintenance (Annual)</label>
+                            <div class="input-group">
+                                <span class="input-prefix">$</span>
+                                <input type="number" id="maintenance" placeholder="3,000" value="3000">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="propertyManagement">Property Management</label>
+                            <div class="input-group">
+                                <input type="number" id="propertyManagement" placeholder="8" value="8" step="0.5">
+                                <span class="input-suffix">% of rent</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="vacancyRate">Vacancy Rate</label>
+                            <div class="input-group">
+                                <input type="number" id="vacancyRate" placeholder="5" value="5" step="0.5">
+                                <span class="input-suffix">%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Income Tab -->
+                    <div class="tab-content" id="income-tab">
+                        <div class="form-group">
+                            <label for="monthlyRent">Monthly Rent</label>
+                            <div class="input-group">
+                                <span class="input-prefix">$</span>
+                                <input type="number" id="monthlyRent" placeholder="3,200" value="3200">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="otherIncome">Other Monthly Income</label>
+                            <div class="input-group">
+                                <span class="input-prefix">$</span>
+                                <input type="number" id="otherIncome" placeholder="0" value="0">
+                            </div>
+                            <small class="form-help">Parking, laundry, storage, etc.</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="rentGrowth">Annual Rent Growth</label>
+                            <div class="input-group">
+                                <input type="number" id="rentGrowth" placeholder="3" value="3" step="0.1">
+                                <span class="input-suffix">%</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="appreciation">Property Appreciation</label>
+                            <div class="input-group">
+                                <input type="number" id="appreciation" placeholder="4" value="4" step="0.1">
+                                <span class="input-suffix">%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn-secondary" onclick="resetCalculator()">
+                            <i class="fas fa-undo"></i> Reset
+                        </button>
+                        <button type="button" class="btn-primary" onclick="calculateROI()">
+                            <i class="fas fa-calculator"></i> Calculate
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Results Panel -->
+                <div class="calculator-results">
+                    <div class="results-header">
+                        <h2>Investment Analysis</h2>
+                        <div class="results-actions">
+                            <button class="btn-icon" onclick="exportResults()" title="Export PDF">
+                                <i class="fas fa-download"></i>
+                            </button>
+                            <button class="btn-icon" onclick="saveToWishlist()" title="Save to Wishlist">
+                                <i class="fas fa-heart"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Key Metrics -->
+                    <div class="metrics-summary">
+                        <div class="metric-card primary">
+                            <div class="metric-icon">
+                                <i class="fas fa-percentage"></i>
+                            </div>
+                            <div class="metric-content">
+                                <div class="metric-value" id="roiValue">--</div>
+                                <div class="metric-label">Annual ROI</div>
+                            </div>
+                        </div>
+
+                        <div class="metric-card">
+                            <div class="metric-icon">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                            <div class="metric-content">
+                                <div class="metric-value" id="cashFlowValue">--</div>
+                                <div class="metric-label">Monthly Cash Flow</div>
+                            </div>
+                        </div>
+
+                        <div class="metric-card">
+                            <div class="metric-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="metric-content">
+                                <div class="metric-value" id="capRateValue">--</div>
+                                <div class="metric-label">Cap Rate</div>
+                            </div>
+                        </div>
+
+                        <div class="metric-card">
+                            <div class="metric-icon">
+                                <i class="fas fa-home"></i>
+                            </div>
+                            <div class="metric-content">
+                                <div class="metric-value" id="rentRatioValue">--</div>
+                                <div class="metric-label">Rent to PITI</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detailed Breakdown -->
+                    <div class="results-breakdown">
+                        <div class="breakdown-section">
+                            <h3>Monthly Income</h3>
+                            <div class="breakdown-item">
+                                <span>Gross Rental Income:</span>
+                                <span id="grossIncome">--</span>
+                            </div>
+                            <div class="breakdown-item">
+                                <span>Other Income:</span>
+                                <span id="otherIncomeDisplay">--</span>
+                            </div>
+                            <div class="breakdown-item total">
+                                <span>Total Monthly Income:</span>
+                                <span id="totalIncome">--</span>
+                            </div>
+                        </div>
+
+                        <div class="breakdown-section">
+                            <h3>Monthly Expenses</h3>
+                            <div class="breakdown-item">
+                                <span>Principal & Interest:</span>
+                                <span id="piPayment">--</span>
+                            </div>
+                            <div class="breakdown-item">
+                                <span>Property Taxes:</span>
+                                <span id="taxesMonthly">--</span>
+                            </div>
+                            <div class="breakdown-item">
+                                <span>Insurance:</span>
+                                <span id="insuranceMonthly">--</span>
+                            </div>
+                            <div class="breakdown-item">
+                                <span>HOA Fees:</span>
+                                <span id="hoaMonthly">--</span>
+                            </div>
+                            <div class="breakdown-item">
+                                <span>Maintenance:</span>
+                                <span id="maintenanceMonthly">--</span>
+                            </div>
+                            <div class="breakdown-item">
+                                <span>Property Management:</span>
+                                <span id="managementMonthly">--</span>
+                            </div>
+                            <div class="breakdown-item">
+                                <span>Vacancy Allowance:</span>
+                                <span id="vacancyMonthly">--</span>
+                            </div>
+                            <div class="breakdown-item total">
+                                <span>Total Monthly Expenses:</span>
+                                <span id="totalExpenses">--</span>
+                            </div>
+                        </div>
+
+                        <div class="breakdown-section">
+                            <h3>Investment Summary</h3>
+                            <div class="breakdown-item">
+                                <span>Total Cash Invested:</span>
+                                <span id="totalInvestment">--</span>
+                            </div>
+                            <div class="breakdown-item">
+                                <span>Loan Amount:</span>
+                                <span id="loanAmount">--</span>
+                            </div>
+                            <div class="breakdown-item">
+                                <span>Monthly Cash Flow:</span>
+                                <span id="monthlyCashFlow">--</span>
+                            </div>
+                            <div class="breakdown-item">
+                                <span>Annual Cash Flow:</span>
+                                <span id="annualCashFlow">--</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Investment Grade -->
+                    <div class="investment-grade">
+                        <div class="grade-header">
+                            <h3>Investment Grade</h3>
+                            <div class="grade-badge" id="investmentGrade">--</div>
+                        </div>
+                        <div class="grade-details">
+                            <div class="grade-criteria">
+                                <div class="criteria-item">
+                                    <span>Cash Flow:</span>
+                                    <div class="criteria-status" id="cashFlowStatus">--</div>
+                                </div>
+                                <div class="criteria-item">
+                                    <span>ROI:</span>
+                                    <div class="criteria-status" id="roiStatus">--</div>
+                                </div>
+                                <div class="criteria-item">
+                                    <span>Cap Rate:</span>
+                                    <div class="criteria-status" id="capRateStatus">--</div>
+                                </div>
+                                <div class="criteria-item">
+                                    <span>Rent Ratio:</span>
+                                    <div class="criteria-status" id="rentRatioStatus">--</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Scenario Comparison -->
+    <section class="scenario-section">
+        <div class="container">
+            <div class="scenario-header">
+                <h2>Scenario Comparison</h2>
+                <button class="btn-primary" onclick="addScenario()">
+                    <i class="fas fa-plus"></i> Add Scenario
+                </button>
+            </div>
+            <div class="scenario-grid" id="scenarioGrid">
+                <!-- Scenarios will be added here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Wishlist Modal -->
+    <div class="modal" id="wishlistModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>My Investment Wishlist</h3>
+                <button class="modal-close" id="modalClose">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="wishlist-summary">
+                    <div class="summary-item">
+                        <span>Total Properties:</span>
+                        <span id="totalProperties">0</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Total Investment:</span>
+                        <span id="totalInvestment">$0</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Expected Monthly Cash Flow:</span>
+                        <span id="totalCashFlow">$0</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Average ROI:</span>
+                        <span id="averageROI">0%</span>
+                    </div>
+                </div>
+                <div class="wishlist-items" id="wishlistItems">
+                    <!-- Wishlist items will be displayed here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="roi-calculator.js"></script>
+</body>
+</html> 
