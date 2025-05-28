@@ -176,7 +176,16 @@ function generateAdditionalListings() {
         
         // Calculate investment metrics
         const estimatedRent = calculateEstimatedRent(bedrooms, bathrooms, sqft, area);
-        const monthlyPITI = calculatePITI(basePrice);
+        
+        // Create a temporary property object for PITI calculation
+        const tempProperty = {
+            price: basePrice,
+            area: area,
+            type: propertyType
+        };
+        const pitiResult = calculatePITI(tempProperty);
+        const monthlyPITI = pitiResult.total;
+        
         const cashFlow = estimatedRent - monthlyPITI;
         const roi = ((cashFlow * 12) / (basePrice * 0.25)) * 100;
         const capRate = ((estimatedRent * 12) / basePrice) * 100;
@@ -198,6 +207,7 @@ function generateAdditionalListings() {
             cashFlow: Math.round(cashFlow),
             roi: Math.round(roi * 10) / 10,
             capRate: Math.round(capRate * 10) / 10,
+            listDate: "2025-05-26",
             
             // Use intelligent analysis results
             isMultiFamily: characteristics.isMultiFamily,
@@ -477,6 +487,50 @@ function analyzePropertyCharacteristics(nwmlsData) {
     return result;
 }
 
+// Calculate estimated rent for a property
+function calculateEstimatedRent(bedrooms, bathrooms, sqft, area) {
+    // Base rent calculation similar to the one in script.js but adapted for deals.js parameters
+    const baseRentPerSqft = {
+        'Seattle': 3.2,
+        'Bellevue': 3.5,
+        'Redmond': 3.3,
+        'Kirkland': 3.1,
+        'Bothell': 2.8,
+        'Everett': 2.6,
+        'Tacoma': 2.4,
+        'Renton': 2.7,
+        'Port Orchard': 2.2,
+        'Sequim': 2.0,
+        'Gardiner': 1.8
+    };
+    
+    // Base rent calculation
+    let baseRent = 1500; // Seattle baseline for 1BR
+    
+    // Adjust for bedrooms
+    if (bedrooms >= 2) {
+        baseRent += (bedrooms - 1) * 400;
+    } else if (bedrooms === 0) { // Studio
+        baseRent = 1200;
+    }
+    
+    // Adjust for bathrooms
+    if (bathrooms >= 2) {
+        baseRent += (bathrooms - 1) * 200;
+    }
+    
+    // Adjust for square footage
+    if (sqft > 1000) {
+        baseRent += (sqft - 1000) * 0.5;
+    }
+    
+    // Apply area multiplier
+    const rentPerSqft = baseRentPerSqft[area] || 2.5;
+    const areaMultiplier = rentPerSqft / 2.8; // Normalize to base rate
+    
+    return Math.round(baseRent * areaMultiplier);
+}
+
 // Global variables
 let filteredDeals = [...newListings];
 let wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
@@ -614,7 +668,7 @@ function applyFiltersAndSort() {
     let filtered = [...newListings];
     
     // Apply search filter
-    const query = searchInput.value.toLowerCase();
+    const query = searchInput ? searchInput.value.toLowerCase() : '';
     if (query) {
         filtered = filtered.filter(property => 
             property.mlsNumber.toLowerCase().includes(query) ||
@@ -625,7 +679,7 @@ function applyFiltersAndSort() {
     }
     
     // Apply minimum rent to PITI ratio filter
-    const minRatio = parseInt(minRentToPiti.value);
+    const minRatio = minRentToPiti ? parseInt(minRentToPiti.value) : 0;
     if (minRatio > 0) {
         filtered = filtered.filter(property => {
             const metrics = calculateMetrics(property);
@@ -634,13 +688,13 @@ function applyFiltersAndSort() {
     }
     
     // Apply property type filter
-    const typeFilter = propertyType.value;
+    const typeFilter = propertyType ? propertyType.value : 'all';
     if (typeFilter !== 'all') {
         filtered = filtered.filter(property => property.type === typeFilter);
     }
     
     // Apply price range filter
-    const priceRangeValue = priceRange.value;
+    const priceRangeValue = priceRange ? priceRange.value : 'all';
     if (priceRangeValue !== 'all') {
         const [min, max] = priceRangeValue.split('-').map(Number);
         if (max) {
@@ -651,32 +705,32 @@ function applyFiltersAndSort() {
     }
     
     // Apply area filter
-    const areaFilter = area.value;
+    const areaFilter = area ? area.value : 'all';
     if (areaFilter !== 'all') {
         filtered = filtered.filter(property => property.area === areaFilter);
     }
     
     // Apply property characteristic filters
-    const multiFamilyFilter = multiFamily.value;
+    const multiFamilyFilter = multiFamily ? multiFamily.value : 'all';
     if (multiFamilyFilter !== 'all') {
         const isMultiFamilyRequired = multiFamilyFilter === 'yes';
         filtered = filtered.filter(property => property.isMultiFamily === isMultiFamilyRequired);
     }
     
-    const detachedFilter = detached.value;
+    const detachedFilter = detached ? detached.value : 'all';
     if (detachedFilter !== 'all') {
         const isDetachedRequired = detachedFilter === 'yes';
         filtered = filtered.filter(property => property.isDetached === isDetachedRequired);
     }
     
-    const largeGarageFilter = largeGarage.value;
+    const largeGarageFilter = largeGarage ? largeGarage.value : 'all';
     if (largeGarageFilter !== 'all') {
         const hasLargeGarageRequired = largeGarageFilter === 'yes';
         filtered = filtered.filter(property => property.hasLargeGarage === hasLargeGarageRequired);
     }
     
     // Sort the results
-    const sortValue = sortBy.value;
+    const sortValue = sortBy ? sortBy.value : 'rentToPiti';
     currentSort = sortValue;
     
     filtered.sort((a, b) => {
@@ -702,7 +756,7 @@ function applyFiltersAndSort() {
     });
     
     // Apply results count limit
-    const maxResults = resultsCount.value;
+    const maxResults = resultsCount ? resultsCount.value : '100';
     if (maxResults !== 'all') {
         filtered = filtered.slice(0, parseInt(maxResults));
     }
@@ -715,6 +769,10 @@ function applyFiltersAndSort() {
 
 // Render the deals table
 function renderDealsTable() {
+    if (!dealsTableBody) {
+        return;
+    }
+    
     if (filteredDeals.length === 0) {
         dealsTableBody.innerHTML = `
             <tr>
