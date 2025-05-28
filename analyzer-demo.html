@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NWMLS Property Analyzer Demo</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .demo-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .demo-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .input-section, .results-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--dark-gray);
+        }
+        
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+        
+        .form-group textarea {
+            height: 100px;
+            resize: vertical;
+        }
+        
+        .analyze-btn {
+            background: var(--secondary-color);
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 1rem;
+            transition: background 0.3s ease;
+        }
+        
+        .analyze-btn:hover {
+            background: #2980b9;
+        }
+        
+        .analyze-btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+        }
+        
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .result-card {
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            border: 2px solid #ecf0f1;
+        }
+        
+        .result-card.positive {
+            background: #d5f4e6;
+            border-color: var(--success-color);
+        }
+        
+        .result-card.negative {
+            background: #fdeaea;
+            border-color: #e74c3c;
+        }
+        
+        .result-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--dark-gray);
+        }
+        
+        .result-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .result-confidence {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .reasons-section {
+            margin-top: 2rem;
+        }
+        
+        .reasons-list {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 6px;
+            margin-top: 0.5rem;
+        }
+        
+        .reasons-list ul {
+            margin: 0;
+            padding-left: 1.5rem;
+        }
+        
+        .reasons-list li {
+            margin-bottom: 0.25rem;
+            color: #555;
+        }
+        
+        .sample-data-btn {
+            background: var(--warning-color);
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            margin-bottom: 1rem;
+        }
+        
+        .sample-data-btn:hover {
+            background: #e67e22;
+        }
+        
+        .error-message {
+            background: #fdeaea;
+            color: #e74c3c;
+            padding: 1rem;
+            border-radius: 6px;
+            margin-top: 1rem;
+        }
+        
+        .loading {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+        }
+        
+        @media (max-width: 768px) {
+            .demo-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="nav-container">
+            <div class="logo">🏢 Seattle REI Analyzer</div>
+            <nav class="nav-menu">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="deals.html" class="nav-link">Top Deals</a>
+                <a href="analysis.html" class="nav-link">Analysis</a>
+                <a href="market-trends.html" class="nav-link">Market Trends</a>
+                <a href="roi-calculator.html" class="nav-link">ROI Calculator</a>
+                <a href="analyzer-demo.html" class="nav-link active">Analyzer Demo</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="demo-container">
+        <h1>🤖 Intelligent Property Analyzer Demo</h1>
+        <p>Test our AI-powered property characteristic detection system. Input NWMLS-style property data and see real-time analysis of Multi-Family, Detached, and Large Garage characteristics.</p>
+        
+        <div class="demo-grid">
+            <div class="input-section">
+                <h2>Property Data Input</h2>
+                <button class="sample-data-btn" onclick="loadSampleData()">Load Sample Data</button>
+                
+                <form id="propertyForm">
+                    <div class="form-group">
+                        <label for="propertyType">Property Type</label>
+                        <select id="propertyType" name="PropertyType">
+                            <option value="RESI">Residential (RESI)</option>
+                            <option value="COND">Condominium (COND)</option>
+                            <option value="MULT">Multi-Family (MULT)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="listPrice">List Price ($)</label>
+                        <input type="number" id="listPrice" name="ListPrice" placeholder="750000">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="squareFeet">Square Feet</label>
+                        <input type="number" id="squareFeet" name="SquareFeet" placeholder="2000">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="garageSpaces">Garage Spaces</label>
+                        <input type="number" id="garageSpaces" name="GarageSpaces" placeholder="2" min="0" max="10">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="lotSize">Lot Size (acres)</label>
+                        <input type="number" id="lotSize" name="LotSize" placeholder="0.25" step="0.01">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="style">Property Style</label>
+                        <input type="text" id="style" name="Style" placeholder="Traditional, Contemporary, etc.">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="subType">Sub Type</label>
+                        <input type="text" id="subType" name="SubType" placeholder="Single Family, Duplex, etc.">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="hoaDues">HOA Dues ($/month)</label>
+                        <input type="number" id="hoaDues" name="HOADues" placeholder="0" min="0">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="publicRemarks">Public Remarks</label>
+                        <textarea id="publicRemarks" name="PublicRemarks" placeholder="Enter property description..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="marketingRemarks">Marketing Remarks</label>
+                        <textarea id="marketingRemarks" name="MarketingRemarks" placeholder="Enter marketing description..."></textarea>
+                    </div>
+                    
+                    <button type="submit" class="analyze-btn" id="analyzeBtn">
+                        🔍 Analyze Property
+                    </button>
+                </form>
+            </div>
+            
+            <div class="results-section">
+                <h2>Analysis Results</h2>
+                <div id="resultsContent">
+                    <p class="loading">Enter property data and click "Analyze Property" to see results.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample data sets for testing
+        const sampleDataSets = [
+            {
+                name: "Single Family Home",
+                data: {
+                    PropertyType: "RESI",
+                    ListPrice: 750000,
+                    SquareFeet: 2000,
+                    GarageSpaces: 2,
+                    LotSize: 0.25,
+                    Style: "Traditional",
+                    SubType: "Single Family",
+                    HOADues: 0,
+                    PublicRemarks: "Beautiful detached single family home with spacious yard and 2 car garage. Features updated kitchen and bathrooms.",
+                    MarketingRemarks: "Don't miss this opportunity! Perfect for families."
+                }
+            },
+            {
+                name: "Multi-Family Duplex",
+                data: {
+                    PropertyType: "MULT",
+                    ListPrice: 950000,
+                    SquareFeet: 2800,
+                    GarageSpaces: 2,
+                    LotSize: 0.15,
+                    Style: "Contemporary",
+                    SubType: "Duplex",
+                    HOADues: 0,
+                    PublicRemarks: "Excellent investment property! Duplex with separate entrances and utilities. Great rental income potential.",
+                    MarketingRemarks: "Perfect for investors or house hacking strategy."
+                }
+            },
+            {
+                name: "Luxury Condo",
+                data: {
+                    PropertyType: "COND",
+                    ListPrice: 650000,
+                    SquareFeet: 1200,
+                    GarageSpaces: 1,
+                    LotSize: 0,
+                    Style: "Modern",
+                    SubType: "Condominium",
+                    HOADues: 450,
+                    PublicRemarks: "Stunning modern condominium with city views and premium finishes. Shared amenities include fitness center.",
+                    MarketingRemarks: "Urban living at its finest!"
+                }
+            }
+        ];
+        
+        let currentSampleIndex = 0;
+        
+        function loadSampleData() {
+            const sampleData = sampleDataSets[currentSampleIndex];
+            currentSampleIndex = (currentSampleIndex + 1) % sampleDataSets.length;
+            
+            // Populate form fields
+            Object.keys(sampleData.data).forEach(key => {
+                const element = document.querySelector(`[name="${key}"]`);
+                if (element) {
+                    element.value = sampleData.data[key];
+                }
+            });
+            
+            // Show which sample was loaded
+            const btn = document.querySelector('.sample-data-btn');
+            btn.textContent = `Loaded: ${sampleData.name}`;
+            setTimeout(() => {
+                btn.textContent = 'Load Sample Data';
+            }, 2000);
+        }
+        
+        function collectFormData() {
+            const form = document.getElementById('propertyForm');
+            const formData = new FormData(form);
+            const data = {};
+            
+            for (let [key, value] of formData.entries()) {
+                // Convert numeric fields
+                if (['ListPrice', 'SquareFeet', 'GarageSpaces', 'LotSize', 'HOADues'].includes(key)) {
+                    data[key] = value ? parseFloat(value) : 0;
+                } else {
+                    data[key] = value;
+                }
+            }
+            
+            return data;
+        }
+        
+        function displayResults(result) {
+            const resultsContent = document.getElementById('resultsContent');
+            
+            if (result.error) {
+                resultsContent.innerHTML = `
+                    <div class="error-message">
+                        <strong>Analysis Error:</strong> ${result.error}
+                    </div>
+                `;
+                return;
+            }
+            
+            const confidence = result.confidence || {};
+            
+            resultsContent.innerHTML = `
+                <div class="results-grid">
+                    <div class="result-card ${result.isMultiFamily ? 'positive' : 'negative'}">
+                        <div class="result-title">Multi-Family</div>
+                        <div class="result-value">${result.isMultiFamily ? 'YES' : 'NO'}</div>
+                        <div class="result-confidence">Confidence: ${((confidence.multi_family || 0) * 100).toFixed(0)}%</div>
+                    </div>
+                    
+                    <div class="result-card ${result.isDetached ? 'positive' : 'negative'}">
+                        <div class="result-title">Detached</div>
+                        <div class="result-value">${result.isDetached ? 'YES' : 'NO'}</div>
+                        <div class="result-confidence">Confidence: ${((confidence.detached || 0) * 100).toFixed(0)}%</div>
+                    </div>
+                    
+                    <div class="result-card ${result.hasLargeGarage ? 'positive' : 'negative'}">
+                        <div class="result-title">Large Garage</div>
+                        <div class="result-value">${result.hasLargeGarage ? 'YES' : 'NO'}</div>
+                        <div class="result-confidence">Confidence: ${((confidence.large_garage || 0) * 100).toFixed(0)}%</div>
+                    </div>
+                </div>
+                
+                ${result.reasons ? `
+                    <div class="reasons-section">
+                        <h3>Detection Reasoning</h3>
+                        
+                        ${result.reasons.multi_family && result.reasons.multi_family.length > 0 ? `
+                            <h4>Multi-Family Detection:</h4>
+                            <div class="reasons-list">
+                                <ul>
+                                    ${result.reasons.multi_family.map(reason => `<li>${reason}</li>`).join('')}
+                                </ul>
+                            </div>
+                        ` : ''}
+                        
+                        ${result.reasons.detached && result.reasons.detached.length > 0 ? `
+                            <h4>Detached Detection:</h4>
+                            <div class="reasons-list">
+                                <ul>
+                                    ${result.reasons.detached.map(reason => `<li>${reason}</li>`).join('')}
+                                </ul>
+                            </div>
+                        ` : ''}
+                        
+                        ${result.reasons.large_garage && result.reasons.large_garage.length > 0 ? `
+                            <h4>Large Garage Detection:</h4>
+                            <div class="reasons-list">
+                                <ul>
+                                    ${result.reasons.large_garage.map(reason => `<li>${reason}</li>`).join('')}
+                                </ul>
+                            </div>
+                        ` : ''}
+                    </div>
+                ` : ''}
+                
+                <div style="margin-top: 2rem; padding: 1rem; background: #f8f9fa; border-radius: 6px; font-size: 0.9rem; color: #666;">
+                    <strong>Analysis Info:</strong><br>
+                    Analyzed at: ${result.analyzed_at || 'Unknown'}<br>
+                    Analyzer version: ${result.analyzer_version || '1.0'}<br>
+                    Data source: ${result.data_source || 'Manual Input'}
+                </div>
+            `;
+        }
+        
+        async function analyzeProperty(propertyData) {
+            try {
+                const response = await fetch('/api/analyze-property', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(propertyData)
+                });
+                
+                const result = await response.json();
+                return result;
+                
+            } catch (error) {
+                return {
+                    error: `Network error: ${error.message}`,
+                    isMultiFamily: false,
+                    isDetached: false,
+                    hasLargeGarage: false
+                };
+            }
+        }
+        
+        // Form submission handler
+        document.getElementById('propertyForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            const resultsContent = document.getElementById('resultsContent');
+            
+            // Show loading state
+            analyzeBtn.disabled = true;
+            analyzeBtn.textContent = '🔄 Analyzing...';
+            resultsContent.innerHTML = '<p class="loading">Analyzing property characteristics...</p>';
+            
+            try {
+                // Collect form data
+                const propertyData = collectFormData();
+                
+                // Analyze property
+                const result = await analyzeProperty(propertyData);
+                
+                // Display results
+                displayResults(result);
+                
+            } catch (error) {
+                displayResults({
+                    error: `Analysis failed: ${error.message}`,
+                    isMultiFamily: false,
+                    isDetached: false,
+                    hasLargeGarage: false
+                });
+            } finally {
+                // Reset button
+                analyzeBtn.disabled = false;
+                analyzeBtn.textContent = '🔍 Analyze Property';
+            }
+        });
+        
+        // Load first sample data on page load
+        window.addEventListener('load', function() {
+            loadSampleData();
+        });
+    </script>
+</body>
+</html> 

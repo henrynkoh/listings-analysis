@@ -129,68 +129,352 @@ const newListings = [
     ...generateAdditionalListings()
 ];
 
-// Generate additional sample listings
+// Enhanced property generation with intelligent analysis
 function generateAdditionalListings() {
-    const areas = ["Seattle", "Bellevue", "Redmond", "Kirkland", "Bothell", "Everett", "Tacoma", "Renton"];
-    const types = ["RESI", "COND", "RENT"];
-    const streets = ["Main St", "Oak Ave", "Pine Dr", "Cedar Ln", "Maple Way", "Elm Ct", "Birch Rd", "Ash Blvd"];
     const listings = [];
-    
-    for (let i = 6; i <= 120; i++) {
+    const areas = ['Seattle', 'Bellevue', 'Redmond', 'Kirkland', 'Bothell', 'Everett', 'Tacoma', 'Renton'];
+    const propertyTypes = ['RESI', 'COND', 'MULT'];
+    const streetNames = [
+        'Main St', 'Oak Ave', 'Pine St', 'Cedar Way', 'Maple Dr', 'Elm St', 'Park Ave', 
+        'Lake St', 'Hill Rd', 'Valley Dr', 'Forest Ave', 'River Rd', 'Mountain View Dr',
+        'Sunset Blvd', 'Harbor St', 'Garden Way', 'Meadow Ln', 'Ridge Rd', 'Creek Dr'
+    ];
+
+    for (let i = 0; i < 120; i++) {
         const area = areas[Math.floor(Math.random() * areas.length)];
-        const type = types[Math.floor(Math.random() * types.length)];
-        const street = streets[Math.floor(Math.random() * streets.length)];
-        const houseNumber = Math.floor(Math.random() * 9999) + 1000;
+        const propertyType = propertyTypes[Math.floor(Math.random() * propertyTypes.length)];
+        const streetName = streetNames[Math.floor(Math.random() * streetNames.length)];
+        const streetNumber = Math.floor(Math.random() * 9999) + 1;
         
-        const basePrice = type === "COND" ? 400000 : type === "RENT" ? 3000 : 600000;
-        const priceVariation = Math.random() * 0.8 + 0.6; // 60% to 140% of base
-        const price = Math.round(basePrice * priceVariation / 1000) * 1000;
+        // Generate base property data
+        const basePrice = Math.floor(Math.random() * 2000000) + 300000;
+        const bedrooms = Math.floor(Math.random() * 5) + 1;
+        const bathrooms = Math.floor(Math.random() * 3) + 1 + (Math.random() < 0.5 ? 0.5 : 0);
+        const sqft = Math.floor(Math.random() * 2500) + 800;
+        const garageSpaces = Math.floor(Math.random() * 4);
         
-        const bedrooms = type === "COND" ? Math.floor(Math.random() * 2) + 1 : Math.floor(Math.random() * 4) + 2;
-        const bathrooms = Math.floor(Math.random() * 2) + 1 + (bedrooms > 2 ? 0.5 : 0);
-        const sqft = bedrooms * 400 + Math.floor(Math.random() * 600) + 200;
+        // Create property description for intelligent analysis
+        const descriptions = generatePropertyDescription(propertyType, bedrooms, bathrooms, sqft, garageSpaces, area);
         
-        // Estimate rent based on area and property characteristics
-        let rentMultiplier = 1.0;
-        if (area === "Seattle" || area === "Bellevue") rentMultiplier = 1.3;
-        else if (area === "Redmond" || area === "Kirkland") rentMultiplier = 1.2;
-        else if (area === "Bothell" || area === "Renton") rentMultiplier = 1.1;
+        // Create NWMLS-style data for analysis
+        const nwmlsData = {
+            PropertyType: propertyType,
+            ListPrice: basePrice,
+            SquareFeet: sqft,
+            GarageSpaces: garageSpaces,
+            PublicRemarks: descriptions.remarks,
+            MarketingRemarks: descriptions.marketing,
+            LotSize: Math.random() * 0.5 + 0.1, // 0.1 to 0.6 acres
+            Style: getPropertyStyle(propertyType),
+            SubType: getPropertySubType(propertyType),
+            ParkingType: getParkingDescription(garageSpaces),
+            HOADues: propertyType === 'COND' ? Math.floor(Math.random() * 500) + 100 : 0
+        };
         
-        const estimatedRent = type === "RENT" ? price : Math.round((sqft * 1.8 * rentMultiplier) / 50) * 50;
+        // Use intelligent analysis to determine characteristics
+        const characteristics = analyzePropertyCharacteristics(nwmlsData);
         
-        // Determine property characteristics based on type and other factors
-        const isMultiFamily = type === "RENT" || (type === "RESI" && bedrooms >= 4 && Math.random() > 0.7);
-        const isDetached = type === "RESI" && Math.random() > 0.3; // 70% chance for residential
-        const hasLargeGarage = (type === "RESI" || type === "RENT") && sqft > 1500 && Math.random() > 0.4; // 60% chance for larger properties
-        
-        listings.push({
-            id: i,
+        // Calculate investment metrics
+        const estimatedRent = calculateEstimatedRent(bedrooms, bathrooms, sqft, area);
+        const monthlyPITI = calculatePITI(basePrice);
+        const cashFlow = estimatedRent - monthlyPITI;
+        const roi = ((cashFlow * 12) / (basePrice * 0.25)) * 100;
+        const capRate = ((estimatedRent * 12) / basePrice) * 100;
+        const rentToPITIRatio = (estimatedRent / monthlyPITI) * 100;
+
+        const listing = {
+            rank: i + 1,
             mlsNumber: `23${80000 + i}`,
-            address: `${houseNumber} ${street}`,
+            address: `${streetNumber} ${streetName}`,
             area: area,
-            city: area,
-            state: "WA",
-            type: type,
-            price: price,
-            listDate: "2025-05-26",
+            type: propertyType,
+            price: basePrice,
             bedrooms: bedrooms,
             bathrooms: bathrooms,
             sqft: sqft,
-            yearBuilt: Math.floor(Math.random() * 40) + 1980,
-            lotSize: Math.random() * 0.5 + 0.1,
-            estimatedRent: estimatedRent,
-            isMultiFamily: isMultiFamily,
-            isDetached: isDetached,
-            hasLargeGarage: hasLargeGarage,
-            marketTrends: {
-                appreciation: Math.random() * 4 + 5, // 5-9%
-                rentGrowth: Math.random() * 3 + 3, // 3-6%
-                demandScore: Math.random() * 3 + 7 // 7-10
-            }
-        });
+            estimatedRent: Math.round(estimatedRent),
+            monthlyPITI: Math.round(monthlyPITI),
+            rentToPITIRatio: Math.round(rentToPITIRatio * 10) / 10,
+            cashFlow: Math.round(cashFlow),
+            roi: Math.round(roi * 10) / 10,
+            capRate: Math.round(capRate * 10) / 10,
+            
+            // Use intelligent analysis results
+            isMultiFamily: characteristics.isMultiFamily,
+            isDetached: characteristics.isDetached,
+            hasLargeGarage: characteristics.hasLargeGarage,
+            
+            // Store confidence scores and reasons for debugging
+            confidence: characteristics.confidence,
+            detectionReasons: characteristics.reasons,
+            
+            // Additional property details
+            yearBuilt: Math.floor(Math.random() * 50) + 1970,
+            lotSize: nwmlsData.LotSize,
+            propertyStyle: nwmlsData.Style,
+            description: descriptions.remarks
+        };
+
+        listings.push(listing);
+    }
+
+    // Sort by rent-to-PITI ratio (highest first)
+    return listings.sort((a, b) => b.rentToPITIRatio - a.rentToPITIRatio);
+}
+
+// Generate realistic property descriptions for analysis
+function generatePropertyDescription(propertyType, bedrooms, bathrooms, sqft, garageSpaces, area) {
+    const descriptions = {
+        remarks: '',
+        marketing: ''
+    };
+    
+    // Base description templates
+    const baseDescriptions = {
+        'RESI': [
+            'Beautiful single family home with spacious layout and modern amenities.',
+            'Charming residential property featuring updated kitchen and bathrooms.',
+            'Well-maintained family home with large yard and plenty of storage.',
+            'Stunning detached home with open floor plan and natural light.',
+            'Traditional single family residence with classic architectural details.'
+        ],
+        'COND': [
+            'Modern condominium with city views and premium finishes.',
+            'Luxury condo featuring high-end appliances and designer touches.',
+            'Bright and airy condominium with balcony and storage.',
+            'Contemporary condo with shared amenities and convenient location.',
+            'Elegant condominium with updated features throughout.'
+        ],
+        'MULT': [
+            'Excellent investment property with multiple rental units.',
+            'Multi-family property with separate entrances and utilities.',
+            'Income-producing duplex with long-term tenants in place.',
+            'Great investment opportunity with strong rental history.',
+            'Multi-unit property perfect for investors or owner-occupants.'
+        ]
+    };
+    
+    // Select base description
+    const baseOptions = baseDescriptions[propertyType] || baseDescriptions['RESI'];
+    descriptions.remarks = baseOptions[Math.floor(Math.random() * baseOptions.length)];
+    
+    // Add specific details based on property characteristics
+    const details = [];
+    
+    // Garage details
+    if (garageSpaces >= 2) {
+        const garageDescriptions = [
+            `${garageSpaces} car garage with workshop space`,
+            `Large ${garageSpaces} car garage with storage`,
+            `Spacious ${garageSpaces} car garage with extra parking`,
+            `Oversized garage accommodating ${garageSpaces} vehicles`,
+            `Double garage with room for ${garageSpaces} cars and storage`
+        ];
+        details.push(garageDescriptions[Math.floor(Math.random() * garageDescriptions.length)]);
+    } else if (garageSpaces === 1) {
+        details.push('Single car garage with additional storage');
     }
     
-    return listings;
+    // Multi-family specific details
+    if (propertyType === 'MULT') {
+        const multiDetails = [
+            'Separate utility meters for each unit',
+            'Individual entrances for privacy',
+            'Excellent rental income potential',
+            'Well-maintained with responsible tenants',
+            'Perfect for house hacking strategy'
+        ];
+        details.push(multiDetails[Math.floor(Math.random() * multiDetails.length)]);
+    }
+    
+    // Detached home specific details
+    if (propertyType === 'RESI') {
+        const detachedDetails = [
+            'Private fenced yard with mature landscaping',
+            'Detached structure with own lot',
+            'No shared walls for maximum privacy',
+            'Individual driveway and entrance',
+            'Standalone home with full ownership'
+        ];
+        details.push(detachedDetails[Math.floor(Math.random() * detachedDetails.length)]);
+    }
+    
+    // Condo specific details
+    if (propertyType === 'COND') {
+        const condoDetails = [
+            'HOA includes water, sewer, and garbage',
+            'Shared amenities including fitness center',
+            'Secure building with controlled access',
+            'Professional property management',
+            'Common areas beautifully maintained'
+        ];
+        details.push(condoDetails[Math.floor(Math.random() * condoDetails.length)]);
+    }
+    
+    // Add size-based details
+    if (sqft > 2000) {
+        details.push('Spacious floor plan with room to entertain');
+    }
+    if (bedrooms >= 4) {
+        details.push('Multiple bedrooms perfect for large families');
+    }
+    
+    // Combine description with details
+    if (details.length > 0) {
+        descriptions.remarks += ' ' + details.join('. ') + '.';
+    }
+    
+    // Create marketing remarks
+    descriptions.marketing = `Don't miss this opportunity in ${area}! ${descriptions.remarks}`;
+    
+    return descriptions;
+}
+
+// Helper functions for property analysis
+function getPropertyStyle(propertyType) {
+    const styles = {
+        'RESI': ['Traditional', 'Contemporary', 'Craftsman', 'Colonial', 'Ranch'],
+        'COND': ['Modern', 'High-Rise', 'Mid-Rise', 'Loft', 'Townhouse'],
+        'MULT': ['Traditional', 'Contemporary', 'Duplex', 'Triplex', 'Apartment']
+    };
+    const options = styles[propertyType] || styles['RESI'];
+    return options[Math.floor(Math.random() * options.length)];
+}
+
+function getPropertySubType(propertyType) {
+    const subTypes = {
+        'RESI': ['Single Family', 'Detached', 'Residential'],
+        'COND': ['Condominium', 'Condo', 'Townhome'],
+        'MULT': ['Multi-Family', 'Duplex', 'Investment Property']
+    };
+    const options = subTypes[propertyType] || subTypes['RESI'];
+    return options[Math.floor(Math.random() * options.length)];
+}
+
+function getParkingDescription(garageSpaces) {
+    if (garageSpaces >= 3) {
+        return 'Triple Garage, Attached';
+    } else if (garageSpaces === 2) {
+        return 'Double Garage, Attached';
+    } else if (garageSpaces === 1) {
+        return 'Single Garage, Attached';
+    } else {
+        return 'Street Parking';
+    }
+}
+
+// Simplified version of the intelligent analyzer for frontend use
+function analyzePropertyCharacteristics(nwmlsData) {
+    const result = {
+        isMultiFamily: false,
+        isDetached: false,
+        hasLargeGarage: false,
+        confidence: { multi_family: 0, detached: 0, large_garage: 0 },
+        reasons: { multi_family: [], detached: [], large_garage: [] }
+    };
+    
+    const propertyType = nwmlsData.PropertyType?.toUpperCase() || '';
+    const remarks = (nwmlsData.PublicRemarks || '').toLowerCase();
+    const marketing = (nwmlsData.MarketingRemarks || '').toLowerCase();
+    const combinedText = `${remarks} ${marketing}`;
+    const garageSpaces = nwmlsData.GarageSpaces || 0;
+    const style = (nwmlsData.Style || '').toLowerCase();
+    const subType = (nwmlsData.SubType || '').toLowerCase();
+    const hoaDues = nwmlsData.HOADues || 0;
+    const lotSize = nwmlsData.LotSize || 0;
+    
+    // Multi-family detection
+    const multiKeywords = ['duplex', 'triplex', 'multi-family', 'multifamily', 'units', 'rental income', 'investment'];
+    const multiTypes = ['MULT', 'DUPLEX', 'TRIPLEX'];
+    
+    if (multiTypes.includes(propertyType)) {
+        result.isMultiFamily = true;
+        result.confidence.multi_family = 0.9;
+        result.reasons.multi_family.push(`Property type: ${propertyType}`);
+    } else {
+        for (const keyword of multiKeywords) {
+            if (combinedText.includes(keyword) || subType.includes(keyword)) {
+                result.confidence.multi_family += 0.3;
+                result.reasons.multi_family.push(`Contains keyword: ${keyword}`);
+            }
+        }
+        result.isMultiFamily = result.confidence.multi_family >= 0.5;
+    }
+    
+    // Detached detection
+    const detachedKeywords = ['single family', 'detached', 'standalone', 'private', 'own lot'];
+    const attachedKeywords = ['condo', 'condominium', 'townhouse', 'attached', 'shared wall'];
+    
+    if (propertyType === 'RESI') {
+        result.confidence.detached = 0.7;
+        result.reasons.detached.push('Property type: Residential');
+    } else if (propertyType === 'COND') {
+        result.confidence.detached = 0.0;
+        result.reasons.detached.push('Property type: Condo (not detached)');
+    }
+    
+    for (const keyword of detachedKeywords) {
+        if (combinedText.includes(keyword) || style.includes(keyword)) {
+            result.confidence.detached += 0.3;
+            result.reasons.detached.push(`Contains keyword: ${keyword}`);
+        }
+    }
+    
+    for (const keyword of attachedKeywords) {
+        if (combinedText.includes(keyword) || style.includes(keyword)) {
+            result.confidence.detached -= 0.4;
+            result.reasons.detached.push(`Contains attached indicator: ${keyword}`);
+        }
+    }
+    
+    if (hoaDues > 0) {
+        result.confidence.detached -= 0.2;
+        result.reasons.detached.push('HOA dues present');
+    }
+    
+    if (lotSize > 0.15) {
+        result.confidence.detached += 0.2;
+        result.reasons.detached.push('Large lot size');
+    }
+    
+    result.confidence.detached = Math.max(0, Math.min(1, result.confidence.detached));
+    result.isDetached = result.confidence.detached >= 0.5;
+    
+    // Large garage detection
+    const garageKeywords = ['two car', '2 car', 'three car', '3 car', 'double garage', 'large garage', 'oversized garage'];
+    
+    if (garageSpaces >= 2) {
+        result.confidence.large_garage = 0.8;
+        result.reasons.large_garage.push(`Garage spaces: ${garageSpaces}`);
+        result.hasLargeGarage = true;
+    } else if (garageSpaces === 1) {
+        result.confidence.large_garage = 0.1;
+        result.reasons.large_garage.push('Single car garage');
+    }
+    
+    for (const keyword of garageKeywords) {
+        if (combinedText.includes(keyword)) {
+            result.confidence.large_garage += 0.4;
+            result.reasons.large_garage.push(`Contains keyword: ${keyword}`);
+        }
+    }
+    
+    if (nwmlsData.ListPrice > 800000) {
+        result.confidence.large_garage += 0.1;
+        result.reasons.large_garage.push('High-value property');
+    }
+    
+    if (nwmlsData.SquareFeet > 2500) {
+        result.confidence.large_garage += 0.1;
+        result.reasons.large_garage.push('Large home');
+    }
+    
+    result.confidence.large_garage = Math.min(1, result.confidence.large_garage);
+    if (!result.hasLargeGarage) {
+        result.hasLargeGarage = result.confidence.large_garage >= 0.5;
+    }
+    
+    return result;
 }
 
 // Global variables

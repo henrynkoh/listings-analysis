@@ -3,6 +3,15 @@ from flask_cors import CORS
 import json
 import random
 from datetime import datetime, timedelta
+import os
+
+# Import our intelligent property analyzer
+try:
+    from nwmls_data_parser import analyze_property_characteristics, NWMLSPropertyAnalyzer
+    ANALYZER_AVAILABLE = True
+except ImportError:
+    ANALYZER_AVAILABLE = False
+    print("Warning: NWMLS Property Analyzer not available. Using fallback logic.")
 
 app = Flask(__name__)
 CORS(app)
@@ -303,6 +312,205 @@ def get_tax_rate(location):
         'location': location,
         'tax_rate': tax_rates.get(location.lower(), 0.78)
     })
+
+@app.route('/api/analyze-property', methods=['POST'])
+def analyze_property():
+    """
+    Analyze property characteristics from NWMLS data
+    
+    Expected JSON payload:
+    {
+        "PropertyType": "RESI",
+        "ListPrice": 750000,
+        "GarageSpaces": 2,
+        "PublicRemarks": "Beautiful home...",
+        "SquareFeet": 2000,
+        ...
+    }
+    """
+    try:
+        if not ANALYZER_AVAILABLE:
+            return jsonify({
+                'error': 'Property analyzer not available',
+                'fallback': True,
+                'isMultiFamily': False,
+                'isDetached': True,
+                'hasLargeGarage': False
+            }), 500
+        
+        # Get property data from request
+        property_data = request.get_json()
+        
+        if not property_data:
+            return jsonify({'error': 'No property data provided'}), 400
+        
+        # Analyze the property
+        result = analyze_property_characteristics(property_data)
+        
+        # Add timestamp and source info
+        result['analyzed_at'] = datetime.now().isoformat()
+        result['analyzer_version'] = '1.0'
+        result['data_source'] = 'NWMLS'
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        return jsonify({
+            'error': f'Analysis failed: {str(e)}',
+            'fallback': True,
+            'isMultiFamily': False,
+            'isDetached': True,
+            'hasLargeGarage': False
+        }), 500
+
+@app.route('/api/analyze-property-batch', methods=['POST'])
+def analyze_property_batch():
+    """
+    Analyze multiple properties at once
+    
+    Expected JSON payload:
+    {
+        "properties": [
+            {"PropertyType": "RESI", "ListPrice": 750000, ...},
+            {"PropertyType": "COND", "ListPrice": 450000, ...},
+            ...
+        ]
+    }
+    """
+    try:
+        if not ANALYZER_AVAILABLE:
+            return jsonify({
+                'error': 'Property analyzer not available',
+                'results': []
+            }), 500
+        
+        data = request.get_json()
+        properties = data.get('properties', [])
+        
+        if not properties:
+            return jsonify({'error': 'No properties provided'}), 400
+        
+        if len(properties) > 100:
+            return jsonify({'error': 'Maximum 100 properties per batch'}), 400
+        
+        results = []
+        analyzer = NWMLSPropertyAnalyzer()
+        
+        for i, property_data in enumerate(properties):
+            try:
+                result = analyzer.analyze_from_nwmls_fields(property_data)
+                
+                # Add property index and simplified result
+                analysis_result = {
+                    'index': i,
+                    'mls_number': property_data.get('MLSNumber', f'BATCH_{i}'),
+                    'isMultiFamily': result['is_multi_family'],
+                    'isDetached': result['is_detached'],
+                    'hasLargeGarage': result['has_large_garage'],
+                    'confidence': result['confidence_scores'],
+                    'summary_reasons': {
+                        'multi_family': len(result['detection_reasons']['multi_family']),
+                        'detached': len(result['detection_reasons']['detached']),
+                        'large_garage': len(result['detection_reasons']['large_garage'])
+                    }
+                }
+                
+                results.append(analysis_result)
+                
+            except Exception as e:
+                # Add error result for this property
+                results.append({
+                    'index': i,
+                    'mls_number': property_data.get('MLSNumber', f'BATCH_{i}'),
+                    'error': str(e),
+                    'isMultiFamily': False,
+                    'isDetached': False,
+                    'hasLargeGarage': False
+                })
+        
+        return jsonify({
+            'total_analyzed': len(results),
+            'successful': len([r for r in results if 'error' not in r]),
+            'failed': len([r for r in results if 'error' in r]),
+            'analyzed_at': datetime.now().isoformat(),
+            'results': results
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'error': f'Batch analysis failed: {str(e)}',
+            'results': []
+        }), 500
+
+@app.route('/api/property-stats')
+def property_stats():
+    """Get statistics about property characteristics detection"""
+    try:
+        # Generate sample statistics (in real implementation, this would query the database)
+        stats = {
+            'total_properties': 1247,
+            'multi_family': {
+                'count': 187,
+                'percentage': 15.0,
+                'avg_confidence': 0.82
+            },
+            'detached': {
+                'count': 873,
+                'percentage': 70.0,
+                'avg_confidence': 0.78
+            },
+            'large_garage': {
+                'count': 748,
+                'percentage': 60.0,
+                'avg_confidence': 0.85
+            },
+            'detection_accuracy': {
+                'multi_family': 0.94,
+                'detached': 0.89,
+                'large_garage': 0.91
+            },
+            'last_updated': datetime.now().isoformat(),
+            'analyzer_status': 'active' if ANALYZER_AVAILABLE else 'unavailable'
+        }
+        
+        return jsonify(stats)
+        
+    except Exception as e:
+        return jsonify({'error': f'Failed to get stats: {str(e)}'}), 500
+
+@app.route('/api/test-analyzer')
+def test_analyzer():
+    """Test endpoint to verify the analyzer is working"""
+    try:
+        if not ANALYZER_AVAILABLE:
+            return jsonify({
+                'status': 'unavailable',
+                'message': 'Property analyzer module not found'
+            }), 500
+        
+        # Test with sample data
+        test_data = {
+            'PropertyType': 'RESI',
+            'ListPrice': 750000,
+            'GarageSpaces': 2,
+            'PublicRemarks': 'Beautiful detached single family home with 2 car garage',
+            'SquareFeet': 2000,
+            'LotSize': 0.25
+        }
+        
+        result = analyze_property_characteristics(test_data)
+        
+        return jsonify({
+            'status': 'working',
+            'test_result': result,
+            'message': 'Property analyzer is functioning correctly'
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': f'Analyzer test failed: {str(e)}'
+        }), 500
 
 if __name__ == '__main__':
     print("Starting Flask server...")

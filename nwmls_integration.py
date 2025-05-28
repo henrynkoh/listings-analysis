@@ -14,6 +14,9 @@ from dataclasses import dataclass
 import schedule
 import time
 
+# Import our intelligent property analyzer
+from nwmls_data_parser import NWMLSPropertyAnalyzer, analyze_property_characteristics
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -168,6 +171,7 @@ class ListingProcessor:
     
     def __init__(self, db_path: str = "listings.db"):
         self.db_path = db_path
+        self.property_analyzer = NWMLSPropertyAnalyzer()
         self.init_database()
     
     def init_database(self):
@@ -200,6 +204,10 @@ class ListingProcessor:
                 is_multi_family BOOLEAN,
                 is_detached BOOLEAN,
                 has_large_garage BOOLEAN,
+                multi_family_confidence REAL,
+                detached_confidence REAL,
+                garage_confidence REAL,
+                detection_reasons TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
@@ -307,28 +315,49 @@ class ListingProcessor:
         
         return payment
     
-    def determine_property_characteristics(self, listing: Dict) -> Dict:
-        """Determine property characteristics (multi-family, detached, large garage)"""
+    def analyze_property_characteristics(self, listing: Dict) -> Dict:
+        """Use intelligent analyzer to determine property characteristics"""
+        try:
+            # Use the intelligent analyzer
+            analysis_result = self.property_analyzer.analyze_from_nwmls_fields(listing)
+            
+            return {
+                'is_multi_family': analysis_result['is_multi_family'],
+                'is_detached': analysis_result['is_detached'],
+                'has_large_garage': analysis_result['has_large_garage'],
+                'multi_family_confidence': analysis_result['confidence_scores']['multi_family'],
+                'detached_confidence': analysis_result['confidence_scores']['detached'],
+                'garage_confidence': analysis_result['confidence_scores']['large_garage'],
+                'detection_reasons': json.dumps(analysis_result['detection_reasons'])
+            }
+            
+        except Exception as e:
+            logger.error(f"Error analyzing property characteristics: {str(e)}")
+            # Fallback to simple logic
+            return self._fallback_characteristic_detection(listing)
+    
+    def _fallback_characteristic_detection(self, listing: Dict) -> Dict:
+        """Fallback method for property characteristic detection"""
         property_type = listing.get('property_type', '').upper()
-        bedrooms = listing.get('bedrooms', 0)
         garage_spaces = listing.get('garage_spaces', 0)
         
-        # Multi-family determination
-        is_multi_family = property_type in ['MULT', 'DUPLEX', 'TRIPLEX'] or \
-                         'duplex' in listing.get('remarks', '').lower() or \
-                         'triplex' in listing.get('remarks', '').lower()
-        
-        # Detached determination
-        is_detached = property_type == 'RESI' and \
-                     listing.get('style', '').upper() not in ['CONDO', 'TOWNHOUSE']
-        
-        # Large garage determination (2+ spaces)
+        # Simple fallback logic
+        is_multi_family = property_type in ['MULT', 'DUPLEX', 'TRIPLEX']
+        is_detached = property_type == 'RESI'
         has_large_garage = garage_spaces >= 2
         
         return {
             'is_multi_family': is_multi_family,
             'is_detached': is_detached,
-            'has_large_garage': has_large_garage
+            'has_large_garage': has_large_garage,
+            'multi_family_confidence': 0.5 if is_multi_family else 0.1,
+            'detached_confidence': 0.7 if is_detached else 0.3,
+            'garage_confidence': 0.8 if has_large_garage else 0.2,
+            'detection_reasons': json.dumps({
+                'multi_family': ['Fallback detection'],
+                'detached': ['Fallback detection'],
+                'large_garage': ['Fallback detection']
+            })
         }
     
     def process_listing(self, listing: Dict) -> bool:
@@ -341,8 +370,8 @@ class ListingProcessor:
             # Calculate investment metrics
             metrics = self.calculate_investment_metrics(listing)
             
-            # Determine property characteristics
-            characteristics = self.determine_property_characteristics(listing)
+            # Analyze property characteristics using intelligent analyzer
+            characteristics = self.analyze_property_characteristics(listing)
             
             # Prepare data for database
             listing_data = {
@@ -380,7 +409,8 @@ class ListingProcessor:
             conn.commit()
             conn.close()
             
-            logger.info(f"Processed listing {mls_number}")
+            logger.info(f"Processed listing {mls_number} - Multi-Family: {characteristics['is_multi_family']}, "
+                       f"Detached: {characteristics['is_detached']}, Large Garage: {characteristics['has_large_garage']}")
             return True
             
         except Exception as e:
@@ -402,11 +432,25 @@ class NWMLSScheduler:
         listings = self.client.get_new_listings(hours_back=24)
         
         processed_count = 0
+        multi_family_count = 0
+        detached_count = 0
+        large_garage_count = 0
+        
         for listing in listings:
             if self.processor.process_listing(listing):
                 processed_count += 1
+                
+                # Count characteristics for reporting
+                characteristics = self.processor.analyze_property_characteristics(listing)
+                if characteristics['is_multi_family']:
+                    multi_family_count += 1
+                if characteristics['is_detached']:
+                    detached_count += 1
+                if characteristics['has_large_garage']:
+                    large_garage_count += 1
         
         logger.info(f"Sync complete. Processed {processed_count} listings.")
+        logger.info(f"Found: {multi_family_count} multi-family, {detached_count} detached, {large_garage_count} large garage properties")
     
     def start_scheduler(self):
         """Start the automated scheduler"""
@@ -416,7 +460,7 @@ class NWMLSScheduler:
         # Schedule full sync every day at 6 AM
         schedule.every().day.at("06:00").do(self.sync_new_listings)
         
-        logger.info("NWMLS scheduler started")
+        logger.info("NWMLS scheduler started with intelligent property analysis")
         
         while True:
             schedule.run_pending()
