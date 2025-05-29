@@ -668,7 +668,21 @@ function applyFiltersAndSort() {
     let filtered = [...newListings];
     
     // Apply search filter
-    const query = searchInput ? searchInput.value.toLowerCase() : '';
+    const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+    
+    // Check for specific zip code 98092 and redirect to ROI Calculator
+    if (query === '98092') {
+        // Show loading state briefly
+        showSearchLoading();
+        
+        // Redirect to ROI Calculator with pre-filled data for 98092 area
+        setTimeout(() => {
+            hideSearchLoading();
+            window.location.href = 'roi-calculator.html?zipcode=98092&location=Federal Way';
+        }, 500);
+        return;
+    }
+    
     if (query) {
         filtered = filtered.filter(property => 
             property.mlsNumber.toLowerCase().includes(query) ||
@@ -1310,33 +1324,63 @@ function exportToCSV() {
 
 // Refresh analysis
 function refreshAnalysis() {
-    // Simulate data refresh
-    document.getElementById('refreshData').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
+    // Simulate refreshing data
+    showLoading();
     
     setTimeout(() => {
+        // Regenerate some listings with new data
+        const newData = generateAdditionalListings(20);
+        newListings = [...newListings.slice(0, 100), ...newData];
+        
         applyFiltersAndSort();
         updateSummaryStats();
-        document.getElementById('refreshData').innerHTML = '<i class="fas fa-sync-alt"></i> Refresh Analysis';
+        hideLoading();
         
         // Show success message
-        const notification = document.createElement('div');
-        notification.style.cssText = `
-            position: fixed;
-            top: 100px;
-            right: 20px;
-            background: #48bb78;
-            color: white;
-            padding: 1rem 2rem;
-            border-radius: 8px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-            z-index: 3000;
-            animation: slideIn 0.3s ease;
-        `;
-        notification.innerHTML = '<i class="fas fa-check"></i> Analysis refreshed successfully!';
-        document.body.appendChild(notification);
-        
-        setTimeout(() => {
-            notification.remove();
-        }, 3000);
-    }, 1500);
+        showNotification('Data refreshed successfully!', 'success');
+    }, 2000);
+}
+
+// Show search loading state
+function showSearchLoading() {
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.style.background = 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'%23718096\'%3E%3Cpath d=\'M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 1L13 3L15 5V7H9V9H15V11L13 13L15 15L21 9ZM4 7V9H6V11H4V13H6V15H8V13H10V11H8V9H10V7H4Z\'/%3E%3C/svg%3E") no-repeat right 12px center';
+        searchInput.style.backgroundSize = '16px';
+        searchInput.disabled = true;
+    }
+}
+
+// Hide search loading state
+function hideSearchLoading() {
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.style.background = '';
+        searchInput.disabled = false;
+    }
+}
+
+// Show notification message
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? '#48bb78' : '#667eea'};
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 3000;
+        animation: slideInRight 0.3s ease;
+    `;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.animation = 'slideInRight 0.3s ease reverse';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
 } 

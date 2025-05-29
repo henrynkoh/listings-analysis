@@ -13,7 +13,8 @@ const taxRates = {
     bothell: 0.0078,
     everett: 0.0078,
     tacoma: 0.0078,
-    renton: 0.0078
+    renton: 0.0078,
+    'federal-way': 0.0085 // Federal Way tax rate
 };
 
 // Initialize page
@@ -25,6 +26,48 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initializeCalculator() {
+    // Check for URL parameters (e.g., from zip code search)
+    const urlParams = new URLSearchParams(window.location.search);
+    const zipcode = urlParams.get('zipcode');
+    const location = urlParams.get('location');
+    
+    // Pre-fill form if redirected from zip code search
+    if (zipcode === '98092' && location) {
+        // Set location to Federal Way (98092 zip code area)
+        const locationSelect = document.getElementById('location');
+        if (locationSelect) {
+            // Add Federal Way option if it doesn't exist
+            let federalWayOption = Array.from(locationSelect.options).find(option => 
+                option.value.toLowerCase().includes('federal way') || option.text.toLowerCase().includes('federal way')
+            );
+            
+            if (!federalWayOption) {
+                federalWayOption = new Option('Federal Way', 'federal-way');
+                locationSelect.appendChild(federalWayOption);
+            }
+            
+            locationSelect.value = federalWayOption.value;
+        }
+        
+        // Set some default values for Federal Way area (98092)
+        const propertyPriceInput = document.getElementById('propertyPrice');
+        const monthlyRentInput = document.getElementById('monthlyRent');
+        
+        if (propertyPriceInput && !propertyPriceInput.value) {
+            propertyPriceInput.value = '650000'; // Average home price in Federal Way
+        }
+        
+        if (monthlyRentInput && !monthlyRentInput.value) {
+            monthlyRentInput.value = '2800'; // Average rent in Federal Way
+        }
+        
+        // Update property taxes based on Federal Way rates
+        updatePropertyTaxes();
+        
+        // Show a welcome message
+        showZipCodeWelcomeMessage(zipcode, location);
+    }
+    
     // Set default values and calculate initial results
     calculateROI();
 }
@@ -751,4 +794,75 @@ style.textContent = `
         background: #e53e3e;
     }
 `;
-document.head.appendChild(style); 
+document.head.appendChild(style);
+
+// Show welcome message when redirected from zip code search
+function showZipCodeWelcomeMessage(zipcode, location) {
+    // Create welcome notification
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 100px;
+        right: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.5rem 2rem;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        z-index: 3000;
+        max-width: 350px;
+        animation: slideInRight 0.5s ease;
+        font-family: 'Inter', sans-serif;
+    `;
+    
+    notification.innerHTML = `
+        <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
+            <i class="fas fa-map-marker-alt" style="margin-right: 0.5rem; font-size: 1.2rem;"></i>
+            <strong style="font-size: 1.1rem;">Welcome to ${location}!</strong>
+        </div>
+        <div style="font-size: 0.9rem; opacity: 0.9; line-height: 1.4;">
+            You searched for zip code <strong>${zipcode}</strong>. We've pre-filled the calculator with average values for ${location} area.
+        </div>
+        <button onclick="this.parentElement.remove()" style="
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            opacity: 0.7;
+            padding: 0.25rem;
+        ">×</button>
+    `;
+    
+    // Add animation keyframes
+    if (!document.getElementById('zipcode-animations')) {
+        const style = document.createElement('style');
+        style.id = 'zipcode-animations';
+        style.textContent = `
+            @keyframes slideInRight {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    document.body.appendChild(notification);
+    
+    // Auto-remove after 8 seconds
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.style.animation = 'slideInRight 0.5s ease reverse';
+            setTimeout(() => notification.remove(), 500);
+        }
+    }, 8000);
+} 

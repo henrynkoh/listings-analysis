@@ -345,7 +345,22 @@ function debounce(func, wait) {
 
 // Search functionality
 function handleSearch() {
-    const query = searchInput.value.toLowerCase();
+    const query = searchInput.value.toLowerCase().trim();
+    
+    // Check for specific zip code 98092 and redirect to ROI Calculator
+    if (query === '98092') {
+        // Show loading state briefly
+        showSearchLoading();
+        
+        // Redirect to ROI Calculator with pre-filled data for 98092 area
+        setTimeout(() => {
+            hideSearchLoading();
+            window.location.href = 'roi-calculator.html?zipcode=98092&location=Federal Way';
+        }, 500);
+        return;
+    }
+    
+    // Original search functionality
     filteredProperties = properties.filter(property => 
         property.title.toLowerCase().includes(query) ||
         property.location.toLowerCase().includes(query) ||
