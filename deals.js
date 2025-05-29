@@ -538,6 +538,11 @@ let currentPage = 1;
 let itemsPerPage = 25;
 let currentSort = 'rentToPiti';
 
+// Global variables to store best properties for card clicks
+let bestRatioProperty = null;
+let bestCashFlowProperty = null;
+let bestROIProperty = null;
+
 // DOM Elements
 const dealsTableBody = document.getElementById('dealsTableBody');
 const searchInput = document.getElementById('searchInput');
@@ -942,16 +947,16 @@ function updateSummaryStats() {
         metrics: calculateMetrics(property)
     }));
     
-    // Find best deals
-    const bestRatioProperty = dealsWithMetrics.reduce((best, current) => 
+    // Find best deals and store in global variables for card clicks
+    bestRatioProperty = dealsWithMetrics.reduce((best, current) => 
         current.metrics.rentToPitiRatio > best.metrics.rentToPitiRatio ? current : best
     );
     
-    const bestCashFlowProperty = dealsWithMetrics.reduce((best, current) => 
+    bestCashFlowProperty = dealsWithMetrics.reduce((best, current) => 
         current.metrics.cashFlow > best.metrics.cashFlow ? current : best
     );
     
-    const bestROIProperty = dealsWithMetrics.reduce((best, current) => 
+    bestROIProperty = dealsWithMetrics.reduce((best, current) => 
         current.metrics.roi > best.metrics.roi ? current : best
     );
     
@@ -1383,4 +1388,434 @@ function showNotification(message, type = 'info') {
         notification.style.animation = 'slideInRight 0.3s ease reverse';
         setTimeout(() => notification.remove(), 300);
     }, 3000);
+}
+
+// Handle summary card clicks
+function handleSummaryCardClick(cardType) {
+    switch (cardType) {
+        case 'best-ratio':
+            if (bestRatioProperty) {
+                showPropertyDetailModal(bestRatioProperty, 'Best Rent to PITI Ratio');
+            }
+            break;
+        case 'highest-cashflow':
+            if (bestCashFlowProperty) {
+                showPropertyDetailModal(bestCashFlowProperty, 'Highest Cash Flow');
+            }
+            break;
+        case 'best-roi':
+            if (bestROIProperty) {
+                showPropertyDetailModal(bestROIProperty, 'Best ROI');
+            }
+            break;
+        case 'average-price':
+            showPriceBreakdownModal();
+            break;
+    }
+}
+
+// Show detailed property modal for best properties
+function showPropertyDetailModal(property, title) {
+    const metrics = calculateMetrics(property);
+    
+    const modal = document.createElement('div');
+    modal.className = 'summary-detail-modal';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    `;
+    
+    modal.innerHTML = `
+        <div class="summary-modal-content" style="
+            background: white;
+            border-radius: 16px;
+            max-width: 700px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        ">
+            <div style="padding: 2rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                    <div>
+                        <h2 style="margin: 0; color: #2d3748; font-size: 1.5rem;">${title}</h2>
+                        <p style="margin: 0.5rem 0 0 0; color: #718096;">MLS# ${property.mlsNumber}</p>
+                    </div>
+                    <button onclick="closeSummaryModal()" style="
+                        background: none;
+                        border: none;
+                        font-size: 1.5rem;
+                        color: #718096;
+                        cursor: pointer;
+                        padding: 0.5rem;
+                        border-radius: 50%;
+                        width: 40px;
+                        height: 40px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        transition: background 0.3s ease;
+                    " onmouseover="this.style.background='#f7fafc'" onmouseout="this.style.background='none'">×</button>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+                    <div>
+                        <h3 style="margin: 0 0 1rem 0; color: #2d3748;">Property Details</h3>
+                        <div style="background: #f7fafc; padding: 1.5rem; border-radius: 12px;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div>
+                                    <div style="font-size: 0.8rem; color: #718096; margin-bottom: 0.25rem;">Address</div>
+                                    <div style="font-weight: 600; color: #2d3748;">${property.address}</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.8rem; color: #718096; margin-bottom: 0.25rem;">Area</div>
+                                    <div style="font-weight: 600; color: #2d3748;">${property.area}</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.8rem; color: #718096; margin-bottom: 0.25rem;">Price</div>
+                                    <div style="font-weight: 600; color: #2d3748;">$${property.price.toLocaleString()}</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.8rem; color: #718096; margin-bottom: 0.25rem;">Type</div>
+                                    <div style="font-weight: 600; color: #2d3748;">${property.type}</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.8rem; color: #718096; margin-bottom: 0.25rem;">Bedrooms</div>
+                                    <div style="font-weight: 600; color: #2d3748;">${property.bedrooms}</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.8rem; color: #718096; margin-bottom: 0.25rem;">Bathrooms</div>
+                                    <div style="font-weight: 600; color: #2d3748;">${property.bathrooms}</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.8rem; color: #718096; margin-bottom: 0.25rem;">Square Feet</div>
+                                    <div style="font-weight: 600; color: #2d3748;">${property.sqft.toLocaleString()}</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.8rem; color: #718096; margin-bottom: 0.25rem;">Year Built</div>
+                                    <div style="font-weight: 600; color: #2d3748;">${property.yearBuilt}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 style="margin: 0 0 1rem 0; color: #2d3748;">Investment Metrics</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div style="text-align: center; padding: 1rem; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border-radius: 8px;">
+                                <div style="font-size: 1.25rem; font-weight: 700;">${metrics.rentToPitiRatio.toFixed(1)}%</div>
+                                <div style="font-size: 0.75rem; opacity: 0.9;">Rent/PITI</div>
+                            </div>
+                            <div style="text-align: center; padding: 1rem; background: ${metrics.cashFlow >= 0 ? '#48bb78' : '#f56565'}; color: white; border-radius: 8px;">
+                                <div style="font-size: 1.25rem; font-weight: 700;">$${metrics.cashFlow.toFixed(0)}</div>
+                                <div style="font-size: 0.75rem; opacity: 0.9;">Cash Flow</div>
+                            </div>
+                            <div style="text-align: center; padding: 1rem; background: #ed8936; color: white; border-radius: 8px;">
+                                <div style="font-size: 1.25rem; font-weight: 700;">${metrics.roi.toFixed(1)}%</div>
+                                <div style="font-size: 0.75rem; opacity: 0.9;">ROI</div>
+                            </div>
+                            <div style="text-align: center; padding: 1rem; background: #38b2ac; color: white; border-radius: 8px;">
+                                <div style="font-size: 1.25rem; font-weight: 700;">${metrics.capRate.toFixed(1)}%</div>
+                                <div style="font-size: 0.75rem; opacity: 0.9;">Cap Rate</div>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 1.5rem;">
+                            <h4 style="margin: 0 0 1rem 0; color: #2d3748;">Monthly Breakdown</h4>
+                            <div style="background: #f7fafc; padding: 1rem; border-radius: 8px;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                    <span style="color: #718096;">Estimated Rent:</span>
+                                    <span style="color: #48bb78; font-weight: 600;">+$${property.estimatedRent.toLocaleString()}</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                    <span style="color: #718096;">PITI Payment:</span>
+                                    <span style="color: #f56565; font-weight: 600;">-$${Math.round(metrics.piti.total).toLocaleString()}</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; padding-top: 0.5rem; border-top: 1px solid #e2e8f0;">
+                                    <span style="color: #2d3748; font-weight: 600;">Net Cash Flow:</span>
+                                    <span style="color: ${metrics.cashFlow >= 0 ? '#48bb78' : '#f56565'}; font-weight: 700;">
+                                        ${metrics.cashFlow >= 0 ? '+' : ''}$${metrics.cashFlow.toFixed(0)}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 1rem; justify-content: center;">
+                    <button onclick="addPropertyToWishlist('${property.mlsNumber}')" style="
+                        padding: 0.75rem 1.5rem;
+                        background: linear-gradient(135deg, #667eea, #764ba2);
+                        color: white;
+                        border: none;
+                        border-radius: 8px;
+                        font-weight: 600;
+                        cursor: pointer;
+                        transition: transform 0.2s ease;
+                    " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                        <i class="fas fa-heart" style="margin-right: 0.5rem;"></i>
+                        Add to Wishlist
+                    </button>
+                    <button onclick="openROICalculatorWithProperty('${property.mlsNumber}')" style="
+                        padding: 0.75rem 1.5rem;
+                        background: white;
+                        color: #667eea;
+                        border: 1px solid #667eea;
+                        border-radius: 8px;
+                        font-weight: 600;
+                        cursor: pointer;
+                        transition: all 0.2s ease;
+                    " onmouseover="this.style.background='#f7fafc'" onmouseout="this.style.background='white'">
+                        <i class="fas fa-calculator" style="margin-right: 0.5rem;"></i>
+                        Analyze in ROI Calculator
+                    </button>
+                    <button onclick="highlightPropertyInTable('${property.mlsNumber}')" style="
+                        padding: 0.75rem 1.5rem;
+                        background: #ed8936;
+                        color: white;
+                        border: none;
+                        border-radius: 8px;
+                        font-weight: 600;
+                        cursor: pointer;
+                        transition: transform 0.2s ease;
+                    " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                        <i class="fas fa-search" style="margin-right: 0.5rem;"></i>
+                        Find in Table
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    setTimeout(() => {
+        modal.style.opacity = '1';
+        modal.querySelector('.summary-modal-content').style.transform = 'translateY(0)';
+    }, 10);
+}
+
+// Show price breakdown modal
+function showPriceBreakdownModal() {
+    if (filteredDeals.length === 0) return;
+    
+    // Calculate price statistics
+    const prices = filteredDeals.map(deal => deal.price);
+    const avgPrice = prices.reduce((sum, price) => sum + price, 0) / prices.length;
+    const minPrice = Math.min(...prices);
+    const maxPrice = Math.max(...prices);
+    const medianPrice = prices.sort((a, b) => a - b)[Math.floor(prices.length / 2)];
+    
+    // Price ranges
+    const priceRanges = {
+        'Under $500K': prices.filter(p => p < 500000).length,
+        '$500K - $750K': prices.filter(p => p >= 500000 && p < 750000).length,
+        '$750K - $1M': prices.filter(p => p >= 750000 && p < 1000000).length,
+        '$1M - $1.5M': prices.filter(p => p >= 1000000 && p < 1500000).length,
+        '$1.5M+': prices.filter(p => p >= 1500000).length
+    };
+    
+    const modal = document.createElement('div');
+    modal.className = 'summary-detail-modal';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    `;
+    
+    modal.innerHTML = `
+        <div class="summary-modal-content" style="
+            background: white;
+            border-radius: 16px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        ">
+            <div style="padding: 2rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                    <h2 style="margin: 0; color: #2d3748; font-size: 1.5rem;">Price Analysis Breakdown</h2>
+                    <button onclick="closeSummaryModal()" style="
+                        background: none;
+                        border: none;
+                        font-size: 1.5rem;
+                        color: #718096;
+                        cursor: pointer;
+                        padding: 0.5rem;
+                        border-radius: 50%;
+                        width: 40px;
+                        height: 40px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        transition: background 0.3s ease;
+                    " onmouseover="this.style.background='#f7fafc'" onmouseout="this.style.background='none'">×</button>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 2rem;">
+                    <div style="text-align: center; padding: 1.5rem; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border-radius: 12px;">
+                        <div style="font-size: 1.5rem; font-weight: 700;">$${(avgPrice / 1000).toFixed(0)}K</div>
+                        <div style="font-size: 0.9rem; opacity: 0.9;">Average Price</div>
+                    </div>
+                    <div style="text-align: center; padding: 1.5rem; background: #48bb78; color: white; border-radius: 12px;">
+                        <div style="font-size: 1.5rem; font-weight: 700;">$${(medianPrice / 1000).toFixed(0)}K</div>
+                        <div style="font-size: 0.9rem; opacity: 0.9;">Median Price</div>
+                    </div>
+                    <div style="text-align: center; padding: 1.5rem; background: #ed8936; color: white; border-radius: 12px;">
+                        <div style="font-size: 1.5rem; font-weight: 700;">$${(minPrice / 1000).toFixed(0)}K</div>
+                        <div style="font-size: 0.9rem; opacity: 0.9;">Lowest Price</div>
+                    </div>
+                    <div style="text-align: center; padding: 1.5rem; background: #38b2ac; color: white; border-radius: 12px;">
+                        <div style="font-size: 1.5rem; font-weight: 700;">$${(maxPrice / 1000).toFixed(0)}K</div>
+                        <div style="font-size: 0.9rem; opacity: 0.9;">Highest Price</div>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 style="margin: 0 0 1rem 0; color: #2d3748;">Price Distribution</h3>
+                    <div style="background: #f7fafc; padding: 1.5rem; border-radius: 12px;">
+                        ${Object.entries(priceRanges).map(([range, count]) => `
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                                <span style="color: #4a5568; font-weight: 500;">${range}</span>
+                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <div style="
+                                        width: ${Math.max(20, (count / filteredDeals.length) * 200)}px;
+                                        height: 8px;
+                                        background: linear-gradient(90deg, #667eea, #764ba2);
+                                        border-radius: 4px;
+                                    "></div>
+                                    <span style="color: #2d3748; font-weight: 600; min-width: 30px;">${count}</span>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                
+                <div style="margin-top: 2rem; text-align: center;">
+                    <button onclick="closeSummaryModal()" style="
+                        padding: 0.75rem 2rem;
+                        background: linear-gradient(135deg, #667eea, #764ba2);
+                        color: white;
+                        border: none;
+                        border-radius: 8px;
+                        font-weight: 600;
+                        cursor: pointer;
+                        transition: transform 0.2s ease;
+                    " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    setTimeout(() => {
+        modal.style.opacity = '1';
+        modal.querySelector('.summary-modal-content').style.transform = 'translateY(0)';
+    }, 10);
+}
+
+// Close summary modal
+function closeSummaryModal() {
+    const modal = document.querySelector('.summary-detail-modal');
+    if (modal) {
+        modal.style.opacity = '0';
+        setTimeout(() => {
+            modal.remove();
+        }, 300);
+    }
+}
+
+// Add property to wishlist from modal
+function addPropertyToWishlist(mlsNumber) {
+    const property = newListings.find(p => p.mlsNumber === mlsNumber);
+    if (!property) return;
+    
+    // Add to wishlist logic (reuse existing functionality)
+    let wishlist = JSON.parse(localStorage.getItem('dealsWishlist') || '[]');
+    
+    if (wishlist.some(item => item.mlsNumber === mlsNumber)) {
+        showNotification('Property already in wishlist!', 'warning');
+        return;
+    }
+    
+    wishlist.push({
+        ...property,
+        dateAdded: new Date().toISOString()
+    });
+    
+    localStorage.setItem('dealsWishlist', JSON.stringify(wishlist));
+    showNotification('Property added to wishlist!', 'success');
+    closeSummaryModal();
+}
+
+// Open ROI calculator with property data
+function openROICalculatorWithProperty(mlsNumber) {
+    const property = newListings.find(p => p.mlsNumber === mlsNumber);
+    if (!property) return;
+    
+    // Store property data for the calculator
+    localStorage.setItem('calculatorPreload', JSON.stringify({
+        propertyPrice: property.price,
+        bedrooms: property.bedrooms,
+        bathrooms: property.bathrooms,
+        squareFootage: property.sqft,
+        monthlyRent: property.estimatedRent,
+        location: property.area.toLowerCase().replace(' ', '-')
+    }));
+    
+    // Navigate to calculator
+    window.location.href = 'roi-calculator.html';
+}
+
+// Highlight property in table
+function highlightPropertyInTable(mlsNumber) {
+    closeSummaryModal();
+    
+    // Find the row in the table
+    const rows = document.querySelectorAll('#dealsTableBody tr');
+    rows.forEach(row => {
+        const mlsCell = row.querySelector('td:nth-child(3)'); // MLS# is 3rd column
+        if (mlsCell && mlsCell.textContent === mlsNumber) {
+            // Scroll to the row
+            row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            // Highlight the row
+            row.style.background = 'linear-gradient(90deg, #ffd700, #ffed4e)';
+            row.style.transform = 'scale(1.02)';
+            row.style.boxShadow = '0 4px 15px rgba(255, 215, 0, 0.3)';
+            row.style.transition = 'all 0.3s ease';
+            
+            // Remove highlight after 3 seconds
+            setTimeout(() => {
+                row.style.background = '';
+                row.style.transform = '';
+                row.style.boxShadow = '';
+            }, 3000);
+        }
+    });
 } 

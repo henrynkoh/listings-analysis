@@ -218,7 +218,7 @@
     <section class="deals-summary">
         <div class="container">
             <div class="summary-cards">
-                <div class="summary-card">
+                <div class="summary-card clickable-card" data-card-type="best-ratio" onclick="handleSummaryCardClick('best-ratio')">
                     <div class="summary-icon">
                         <i class="fas fa-trophy"></i>
                     </div>
@@ -227,9 +227,13 @@
                         <div class="summary-label">Best Rent to PITI</div>
                         <div class="summary-detail" id="bestDealAddress">3677 SE Chesterton Dr</div>
                     </div>
+                    <div class="card-action-hint">
+                        <i class="fas fa-mouse-pointer"></i>
+                        <span>Click to view details</span>
+                    </div>
                 </div>
                 
-                <div class="summary-card">
+                <div class="summary-card clickable-card" data-card-type="highest-cashflow" onclick="handleSummaryCardClick('highest-cashflow')">
                     <div class="summary-icon">
                         <i class="fas fa-dollar-sign"></i>
                     </div>
@@ -238,9 +242,13 @@
                         <div class="summary-label">Highest Cash Flow</div>
                         <div class="summary-detail" id="highestCashFlowAddress">8627 25th Ave #B</div>
                     </div>
+                    <div class="card-action-hint">
+                        <i class="fas fa-mouse-pointer"></i>
+                        <span>Click to view details</span>
+                    </div>
                 </div>
                 
-                <div class="summary-card">
+                <div class="summary-card clickable-card" data-card-type="best-roi" onclick="handleSummaryCardClick('best-roi')">
                     <div class="summary-icon">
                         <i class="fas fa-percentage"></i>
                     </div>
@@ -249,9 +257,13 @@
                         <div class="summary-label">Best ROI</div>
                         <div class="summary-detail" id="bestROIAddress">94 Brazil Rd</div>
                     </div>
+                    <div class="card-action-hint">
+                        <i class="fas fa-mouse-pointer"></i>
+                        <span>Click to view details</span>
+                    </div>
                 </div>
                 
-                <div class="summary-card">
+                <div class="summary-card clickable-card" data-card-type="average-price" onclick="handleSummaryCardClick('average-price')">
                     <div class="summary-icon">
                         <i class="fas fa-chart-line"></i>
                     </div>
@@ -259,6 +271,10 @@
                         <div class="summary-number" id="avgPrice">$687K</div>
                         <div class="summary-label">Average Price</div>
                         <div class="summary-detail">Top 100 Deals</div>
+                    </div>
+                    <div class="card-action-hint">
+                        <i class="fas fa-mouse-pointer"></i>
+                        <span>Click to view breakdown</span>
                     </div>
                 </div>
             </div>

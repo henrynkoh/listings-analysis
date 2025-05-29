@@ -81,31 +81,66 @@
 
 .summary-card {
     background: white;
-    padding: 2rem;
-    border-radius: 16px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     display: flex;
     align-items: center;
-    gap: 1.5rem;
+    gap: 1rem;
     transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
 }
 
-.summary-card:hover {
+.summary-card.clickable-card {
+    cursor: pointer;
+    user-select: none;
+}
+
+.summary-card.clickable-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+}
+
+.summary-card.clickable-card:active {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+}
+
+.summary-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.summary-card.clickable-card:hover::before {
+    opacity: 1;
 }
 
 .summary-icon {
     width: 60px;
     height: 60px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #667eea, #764ba2);
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
     font-size: 1.5rem;
     flex-shrink: 0;
+    transition: all 0.3s ease;
+}
+
+.summary-card.clickable-card:hover .summary-icon {
+    transform: scale(1.1);
+    background: linear-gradient(135deg, #5a67d8, #6b46c1);
 }
 
 .summary-content {
@@ -117,18 +152,57 @@
     font-weight: 700;
     color: #2d3748;
     margin-bottom: 0.25rem;
+    transition: color 0.3s ease;
+}
+
+.summary-card.clickable-card:hover .summary-number {
+    color: #667eea;
 }
 
 .summary-label {
-    font-size: 1rem;
+    font-size: 0.9rem;
+    color: #718096;
     font-weight: 600;
-    color: #667eea;
     margin-bottom: 0.25rem;
 }
 
 .summary-detail {
-    font-size: 0.9rem;
-    color: #666;
+    font-size: 0.8rem;
+    color: #a0aec0;
+    font-weight: 500;
+}
+
+.card-action-hint {
+    position: absolute;
+    bottom: 0.5rem;
+    right: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.7rem;
+    color: #a0aec0;
+    opacity: 0;
+    transition: all 0.3s ease;
+    transform: translateY(10px);
+}
+
+.summary-card.clickable-card:hover .card-action-hint {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.card-action-hint i {
+    font-size: 0.6rem;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
 }
 
 /* Deals Section */

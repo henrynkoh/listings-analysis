@@ -301,6 +301,24 @@ function setupEventListeners() {
     // Search functionality
     searchInput.addEventListener('input', debounce(handleSearch, 300));
     
+    // Search button click
+    const searchButton = document.getElementById('searchButton');
+    if (searchButton) {
+        searchButton.addEventListener('click', handleSearch);
+    }
+    
+    // Enter key support for search
+    searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            handleSearch();
+        }
+    });
+    
+    // Search input focus/blur for hints
+    searchInput.addEventListener('focus', showSearchHint);
+    searchInput.addEventListener('blur', hideSearchHint);
+    
     // Filter functionality
     categoryFilter.addEventListener('change', handleFilters);
     sortFilter.addEventListener('change', handleFilters);
@@ -347,26 +365,70 @@ function debounce(func, wait) {
 function handleSearch() {
     const query = searchInput.value.toLowerCase().trim();
     
-    // Check for specific zip code 98092 and redirect to ROI Calculator
-    if (query === '98092') {
+    // Check for zip codes and redirect to ROI Calculator
+    if (/^\d{5}$/.test(query)) {
         // Show loading state briefly
         showSearchLoading();
         
-        // Redirect to ROI Calculator with pre-filled data for 98092 area
+        // Create a notification for zip code search
+        showZipCodeNotification(query);
+        
+        // Redirect to ROI Calculator with pre-filled data
         setTimeout(() => {
             hideSearchLoading();
-            window.location.href = 'roi-calculator.html?zipcode=98092&location=Federal Way';
-        }, 500);
+            if (query === '98092') {
+                window.location.href = 'roi-calculator.html?zipcode=98092&location=Federal Way';
+            } else {
+                // For other zip codes, redirect to ROI calculator with the zip code
+                window.location.href = `roi-calculator.html?zipcode=${query}`;
+            }
+        }, 1500);
         return;
     }
     
-    // Original search functionality
+    // Check for MLS numbers (typically 6-8 digits)
+    if (/^\d{6,8}$/.test(query)) {
+        handleMLSSearch();
+        return;
+    }
+    
+    // Original search functionality for text searches
     filteredProperties = properties.filter(property => 
         property.title.toLowerCase().includes(query) ||
         property.location.toLowerCase().includes(query) ||
         property.category.toLowerCase().includes(query)
     );
     applyFiltersAndSort();
+}
+
+// Show zip code search notification
+function showZipCodeNotification(zipCode) {
+    // Remove any existing notifications
+    const existingNotification = document.querySelector('.zip-notification');
+    if (existingNotification) {
+        existingNotification.remove();
+    }
+    
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = 'zip-notification';
+    notification.innerHTML = `
+        <div class="notification-content">
+            <i class="fas fa-map-marker-alt"></i>
+            <span>Searching properties in zip code ${zipCode}...</span>
+            <span>Redirecting to ROI Calculator</span>
+        </div>
+    `;
+    
+    // Add to page
+    document.body.appendChild(notification);
+    
+    // Remove after animation
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 2000);
 }
 
 // Filter and sort functionality
@@ -1430,6 +1492,57 @@ function hideSearchLoading() {
         searchInput.style.background = '';
         searchInput.disabled = false;
     }
+}
+
+// Show search hint
+function showSearchHint() {
+    // Remove any existing hint
+    const existingHint = document.querySelector('.search-hint');
+    if (existingHint) {
+        existingHint.remove();
+    }
+    
+    // Create hint element
+    const hint = document.createElement('div');
+    hint.className = 'search-hint';
+    hint.innerHTML = `
+        <div class="hint-content">
+            <div class="hint-item">
+                <i class="fas fa-map-marker-alt"></i>
+                <span><strong>98092</strong> - Search by zip code</span>
+            </div>
+            <div class="hint-item">
+                <i class="fas fa-home"></i>
+                <span><strong>1234567</strong> - Search by MLS#</span>
+            </div>
+            <div class="hint-item">
+                <i class="fas fa-search"></i>
+                <span><strong>Capitol Hill</strong> - Search by location</span>
+            </div>
+        </div>
+    `;
+    
+    // Position relative to search container
+    const searchContainer = document.querySelector('.search-container');
+    searchContainer.appendChild(hint);
+    
+    // Show with animation
+    setTimeout(() => hint.classList.add('show'), 10);
+}
+
+// Hide search hint
+function hideSearchHint() {
+    setTimeout(() => {
+        const hint = document.querySelector('.search-hint');
+        if (hint) {
+            hint.classList.remove('show');
+            setTimeout(() => {
+                if (hint.parentNode) {
+                    hint.remove();
+                }
+            }, 300);
+        }
+    }, 150); // Small delay to allow clicking on hint
 }
 
 // Update the existing search input event listener
