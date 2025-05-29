@@ -74,18 +74,28 @@
                 <h1 class="hero-title">Investment ROI Calculator</h1>
                 <p class="hero-subtitle">Calculate returns, cash flow, and investment metrics for Seattle real estate properties</p>
                 <div class="hero-features">
-                    <div class="feature">
+                    <button class="feature feature-btn" id="realTimeBtn" onclick="toggleRealTimeCalculations()">
                         <i class="fas fa-calculator"></i>
                         <span>Real-time Calculations</span>
-                    </div>
-                    <div class="feature">
+                        <div class="feature-status" id="realTimeStatus">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Enabled</span>
+                        </div>
+                    </button>
+                    <button class="feature feature-btn" id="scenariosBtn" onclick="openScenariosModal()">
                         <i class="fas fa-chart-pie"></i>
                         <span>Multiple Scenarios</span>
-                    </div>
-                    <div class="feature">
+                        <div class="feature-badge" id="scenariosBadge">
+                            <span id="scenariosCount">0</span>
+                        </div>
+                    </button>
+                    <button class="feature feature-btn" id="exportBtn" onclick="openExportModal()">
                         <i class="fas fa-download"></i>
                         <span>Export Reports</span>
-                    </div>
+                        <div class="feature-indicator">
+                            <i class="fas fa-arrow-right"></i>
+                        </div>
+                    </button>
                 </div>
             </div>
         </div>
@@ -511,6 +521,174 @@
                 </div>
                 <div class="wishlist-items" id="wishlistItems">
                     <!-- Wishlist items will be displayed here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scenarios Modal -->
+    <div class="modal" id="scenariosModal">
+        <div class="modal-content large-modal">
+            <div class="modal-header">
+                <h3>Multiple Scenarios Comparison</h3>
+                <button class="modal-close" onclick="closeScenariosModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="scenarios-toolbar">
+                    <button class="btn-primary" onclick="saveCurrentScenario()">
+                        <i class="fas fa-save"></i> Save Current Scenario
+                    </button>
+                    <button class="btn-secondary" onclick="clearAllScenarios()">
+                        <i class="fas fa-trash"></i> Clear All
+                    </button>
+                    <button class="btn-secondary" onclick="exportScenariosComparison()">
+                        <i class="fas fa-download"></i> Export Comparison
+                    </button>
+                </div>
+                <div class="scenarios-grid" id="scenariosModalGrid">
+                    <div class="no-scenarios">
+                        <i class="fas fa-chart-pie"></i>
+                        <h4>No Scenarios Saved</h4>
+                        <p>Calculate ROI for different properties and save them as scenarios to compare side by side.</p>
+                        <button class="btn-primary" onclick="saveCurrentScenario()">Save Current Calculation</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Modal -->
+    <div class="modal" id="exportModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Export Investment Report</h3>
+                <button class="modal-close" onclick="closeExportModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="export-options">
+                    <div class="export-option" onclick="exportToPDF()">
+                        <div class="export-icon">
+                            <i class="fas fa-file-pdf"></i>
+                        </div>
+                        <div class="export-details">
+                            <h4>PDF Report</h4>
+                            <p>Complete investment analysis with charts and breakdown</p>
+                        </div>
+                        <div class="export-action">
+                            <i class="fas fa-download"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="export-option" onclick="exportToExcel()">
+                        <div class="export-icon">
+                            <i class="fas fa-file-excel"></i>
+                        </div>
+                        <div class="export-details">
+                            <h4>Excel Spreadsheet</h4>
+                            <p>Detailed calculations and data for further analysis</p>
+                        </div>
+                        <div class="export-action">
+                            <i class="fas fa-download"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="export-option" onclick="exportToCSV()">
+                        <div class="export-icon">
+                            <i class="fas fa-file-csv"></i>
+                        </div>
+                        <div class="export-details">
+                            <h4>CSV Data</h4>
+                            <p>Raw data export for custom analysis</p>
+                        </div>
+                        <div class="export-action">
+                            <i class="fas fa-download"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="export-option" onclick="shareReport()">
+                        <div class="export-icon">
+                            <i class="fas fa-share-alt"></i>
+                        </div>
+                        <div class="export-details">
+                            <h4>Share Report</h4>
+                            <p>Generate shareable link or email report</p>
+                        </div>
+                        <div class="export-action">
+                            <i class="fas fa-external-link-alt"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="export-settings">
+                    <h4>Export Settings</h4>
+                    <div class="setting-group">
+                        <label>
+                            <input type="checkbox" id="includeCharts" checked>
+                            Include charts and graphs
+                        </label>
+                    </div>
+                    <div class="setting-group">
+                        <label>
+                            <input type="checkbox" id="includeBreakdown" checked>
+                            Include detailed breakdown
+                        </label>
+                    </div>
+                    <div class="setting-group">
+                        <label>
+                            <input type="checkbox" id="includeScenarios">
+                            Include scenario comparisons
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Real-time Settings Modal -->
+    <div class="modal" id="realTimeModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Real-time Calculation Settings</h3>
+                <button class="modal-close" onclick="closeRealTimeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="setting-group">
+                    <label class="toggle-label">
+                        <input type="checkbox" id="realTimeToggle" checked>
+                        <span class="toggle-slider"></span>
+                        Enable real-time calculations
+                    </label>
+                    <p class="setting-description">Automatically recalculate results as you type</p>
+                </div>
+                
+                <div class="setting-group">
+                    <label for="calculationDelay">Calculation Delay (ms)</label>
+                    <input type="range" id="calculationDelay" min="100" max="1000" value="300" step="100">
+                    <span id="delayValue">300ms</span>
+                    <p class="setting-description">Delay before recalculating to improve performance</p>
+                </div>
+                
+                <div class="setting-group">
+                    <label class="toggle-label">
+                        <input type="checkbox" id="autoSaveToggle">
+                        <span class="toggle-slider"></span>
+                        Auto-save calculations
+                    </label>
+                    <p class="setting-description">Automatically save calculations to browser storage</p>
+                </div>
+                
+                <div class="setting-group">
+                    <label class="toggle-label">
+                        <input type="checkbox" id="showAnimationsToggle" checked>
+                        <span class="toggle-slider"></span>
+                        Show calculation animations
+                    </label>
+                    <p class="setting-description">Display visual feedback during calculations</p>
+                </div>
+                
+                <div class="modal-actions">
+                    <button class="btn-primary" onclick="saveRealTimeSettings()">Save Settings</button>
+                    <button class="btn-secondary" onclick="resetRealTimeSettings()">Reset to Default</button>
                 </div>
             </div>
         </div>

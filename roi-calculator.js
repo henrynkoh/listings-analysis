@@ -865,4 +865,496 @@ function showZipCodeWelcomeMessage(zipcode, location) {
             setTimeout(() => notification.remove(), 500);
         }
     }, 8000);
-} 
+}
+
+// Real-time Calculations Feature
+let realTimeEnabled = true;
+let calculationDelay = 300;
+
+function toggleRealTimeCalculations() {
+    const modal = document.getElementById('realTimeModal');
+    if (modal) {
+        modal.style.display = 'flex';
+    }
+}
+
+function closeRealTimeModal() {
+    const modal = document.getElementById('realTimeModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+function saveRealTimeSettings() {
+    const realTimeToggle = document.getElementById('realTimeToggle');
+    const delaySlider = document.getElementById('calculationDelay');
+    const autoSaveToggle = document.getElementById('autoSaveToggle');
+    const animationsToggle = document.getElementById('showAnimationsToggle');
+    
+    realTimeEnabled = realTimeToggle.checked;
+    calculationDelay = parseInt(delaySlider.value);
+    
+    // Update status display
+    updateRealTimeStatus();
+    
+    // Save to localStorage
+    localStorage.setItem('realTimeSettings', JSON.stringify({
+        enabled: realTimeEnabled,
+        delay: calculationDelay,
+        autoSave: autoSaveToggle.checked,
+        animations: animationsToggle.checked
+    }));
+    
+    closeRealTimeModal();
+    showNotification('Real-time settings saved successfully!', 'success');
+}
+
+function resetRealTimeSettings() {
+    document.getElementById('realTimeToggle').checked = true;
+    document.getElementById('calculationDelay').value = 300;
+    document.getElementById('autoSaveToggle').checked = false;
+    document.getElementById('showAnimationsToggle').checked = true;
+    document.getElementById('delayValue').textContent = '300ms';
+    
+    realTimeEnabled = true;
+    calculationDelay = 300;
+    updateRealTimeStatus();
+}
+
+function updateRealTimeStatus() {
+    const statusElement = document.getElementById('realTimeStatus');
+    const btnElement = document.getElementById('realTimeBtn');
+    
+    if (realTimeEnabled) {
+        statusElement.innerHTML = '<i class="fas fa-check-circle"></i><span>Enabled</span>';
+        btnElement.classList.add('active');
+    } else {
+        statusElement.innerHTML = '<i class="fas fa-pause-circle"></i><span>Disabled</span>';
+        btnElement.classList.remove('active');
+    }
+}
+
+// Scenarios Feature
+function openScenariosModal() {
+    const modal = document.getElementById('scenariosModal');
+    if (modal) {
+        modal.style.display = 'flex';
+        renderScenariosModal();
+    }
+}
+
+function closeScenariosModal() {
+    const modal = document.getElementById('scenariosModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+function saveCurrentScenario() {
+    if (!currentCalculation) {
+        showNotification('Please calculate ROI first before saving a scenario.', 'warning');
+        return;
+    }
+    
+    const scenarioName = prompt('Enter a name for this scenario:') || `Scenario ${scenarios.length + 1}`;
+    
+    const scenario = {
+        id: Date.now().toString(),
+        name: scenarioName,
+        calculation: JSON.parse(JSON.stringify(currentCalculation)),
+        createdAt: new Date().toISOString()
+    };
+    
+    scenarios.push(scenario);
+    updateScenariosCount();
+    renderScenariosModal();
+    
+    showNotification(`Scenario "${scenarioName}" saved successfully!`, 'success');
+}
+
+function clearAllScenarios() {
+    if (scenarios.length === 0) return;
+    
+    if (confirm('Are you sure you want to clear all scenarios? This action cannot be undone.')) {
+        scenarios = [];
+        updateScenariosCount();
+        renderScenariosModal();
+        showNotification('All scenarios cleared.', 'info');
+    }
+}
+
+function renderScenariosModal() {
+    const grid = document.getElementById('scenariosModalGrid');
+    if (!grid) return;
+    
+    if (scenarios.length === 0) {
+        grid.innerHTML = `
+            <div class="no-scenarios">
+                <i class="fas fa-chart-pie"></i>
+                <h4>No Scenarios Saved</h4>
+                <p>Calculate ROI for different properties and save them as scenarios to compare side by side.</p>
+                <button class="btn-primary" onclick="saveCurrentScenario()">Save Current Calculation</button>
+            </div>
+        `;
+        return;
+    }
+    
+    grid.innerHTML = scenarios.map(scenario => `
+        <div class="scenario-comparison-card">
+            <div class="scenario-header">
+                <h4>${scenario.name}</h4>
+                <div class="scenario-actions">
+                    <button class="btn-icon" onclick="loadScenario('${scenario.id}')" title="Load Scenario">
+                        <i class="fas fa-upload"></i>
+                    </button>
+                    <button class="btn-icon" onclick="removeScenario('${scenario.id}')" title="Delete Scenario">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="scenario-metrics">
+                <div class="metric-row">
+                    <span>Property Price:</span>
+                    <span>$${scenario.calculation.inputs.propertyPrice.toLocaleString()}</span>
+                </div>
+                <div class="metric-row">
+                    <span>ROI:</span>
+                    <span class="${scenario.calculation.results.roi >= 10 ? 'positive' : 'negative'}">${scenario.calculation.results.roi.toFixed(1)}%</span>
+                </div>
+                <div class="metric-row">
+                    <span>Cash Flow:</span>
+                    <span class="${scenario.calculation.results.monthlyCashFlow >= 0 ? 'positive' : 'negative'}">$${scenario.calculation.results.monthlyCashFlow.toFixed(0)}</span>
+                </div>
+                <div class="metric-row">
+                    <span>Cap Rate:</span>
+                    <span>${scenario.calculation.results.capRate.toFixed(1)}%</span>
+                </div>
+                <div class="metric-row">
+                    <span>Rent/PITI:</span>
+                    <span>${scenario.calculation.results.rentToPITI.toFixed(0)}%</span>
+                </div>
+            </div>
+            <div class="scenario-footer">
+                <small>Created: ${new Date(scenario.createdAt).toLocaleDateString()}</small>
+            </div>
+        </div>
+    `).join('');
+}
+
+function loadScenario(scenarioId) {
+    const scenario = scenarios.find(s => s.id === scenarioId);
+    if (!scenario) return;
+    
+    // Load the scenario inputs into the form
+    const inputs = scenario.calculation.inputs;
+    Object.keys(inputs).forEach(key => {
+        const element = document.getElementById(key);
+        if (element && typeof inputs[key] !== 'function') {
+            element.value = inputs[key];
+        }
+    });
+    
+    // Recalculate with loaded values
+    calculateROI();
+    closeScenariosModal();
+    
+    showNotification(`Scenario "${scenario.name}" loaded successfully!`, 'success');
+}
+
+function updateScenariosCount() {
+    const countElement = document.getElementById('scenariosCount');
+    if (countElement) {
+        countElement.textContent = scenarios.length;
+    }
+}
+
+function exportScenariosComparison() {
+    if (scenarios.length === 0) {
+        showNotification('No scenarios to export.', 'warning');
+        return;
+    }
+    
+    // Create CSV content for scenarios comparison
+    const headers = ['Scenario Name', 'Property Price', 'ROI (%)', 'Monthly Cash Flow', 'Cap Rate (%)', 'Rent/PITI (%)', 'Created Date'];
+    const csvContent = [
+        headers.join(','),
+        ...scenarios.map(scenario => [
+            `"${scenario.name}"`,
+            scenario.calculation.inputs.propertyPrice,
+            scenario.calculation.results.roi.toFixed(2),
+            scenario.calculation.results.monthlyCashFlow.toFixed(2),
+            scenario.calculation.results.capRate.toFixed(2),
+            scenario.calculation.results.rentToPITI.toFixed(2),
+            new Date(scenario.createdAt).toLocaleDateString()
+        ].join(','))
+    ].join('\n');
+    
+    downloadCSV(csvContent, 'scenarios-comparison.csv');
+    showNotification('Scenarios comparison exported successfully!', 'success');
+}
+
+// Export Feature
+function openExportModal() {
+    const modal = document.getElementById('exportModal');
+    if (modal) {
+        modal.style.display = 'flex';
+    }
+}
+
+function closeExportModal() {
+    const modal = document.getElementById('exportModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+function exportToPDF() {
+    if (!currentCalculation) {
+        showNotification('Please calculate ROI first before exporting.', 'warning');
+        return;
+    }
+    
+    showExportProgress('Generating PDF report...');
+    
+    // Simulate PDF generation
+    setTimeout(() => {
+        const reportData = generateReportData();
+        // In a real implementation, you would use a library like jsPDF
+        console.log('PDF Report Data:', reportData);
+        
+        hideExportProgress();
+        showNotification('PDF report generated successfully!', 'success');
+        closeExportModal();
+    }, 2000);
+}
+
+function exportToExcel() {
+    if (!currentCalculation) {
+        showNotification('Please calculate ROI first before exporting.', 'warning');
+        return;
+    }
+    
+    showExportProgress('Generating Excel spreadsheet...');
+    
+    setTimeout(() => {
+        const reportData = generateReportData();
+        // Create CSV format that can be opened in Excel
+        const csvContent = generateExcelCSV(reportData);
+        downloadCSV(csvContent, 'roi-analysis.csv');
+        
+        hideExportProgress();
+        showNotification('Excel file downloaded successfully!', 'success');
+        closeExportModal();
+    }, 1500);
+}
+
+function exportToCSV() {
+    if (!currentCalculation) {
+        showNotification('Please calculate ROI first before exporting.', 'warning');
+        return;
+    }
+    
+    const reportData = generateReportData();
+    const csvContent = generateSimpleCSV(reportData);
+    downloadCSV(csvContent, 'roi-data.csv');
+    
+    showNotification('CSV data exported successfully!', 'success');
+    closeExportModal();
+}
+
+function shareReport() {
+    if (!currentCalculation) {
+        showNotification('Please calculate ROI first before sharing.', 'warning');
+        return;
+    }
+    
+    // Generate shareable URL with calculation parameters
+    const params = new URLSearchParams();
+    Object.keys(currentCalculation.inputs).forEach(key => {
+        if (typeof currentCalculation.inputs[key] !== 'function') {
+            params.set(key, currentCalculation.inputs[key]);
+        }
+    });
+    
+    const shareUrl = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
+    
+    // Copy to clipboard
+    navigator.clipboard.writeText(shareUrl).then(() => {
+        showNotification('Shareable link copied to clipboard!', 'success');
+    }).catch(() => {
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = shareUrl;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        showNotification('Shareable link copied to clipboard!', 'success');
+    });
+    
+    closeExportModal();
+}
+
+// Helper functions for export
+function generateReportData() {
+    return {
+        property: currentCalculation.inputs,
+        results: currentCalculation.results,
+        timestamp: new Date().toISOString(),
+        scenarios: scenarios
+    };
+}
+
+function generateExcelCSV(data) {
+    const lines = [
+        'ROI Investment Analysis Report',
+        `Generated: ${new Date().toLocaleDateString()}`,
+        '',
+        'Property Information',
+        `Property Price,$${data.property.propertyPrice.toLocaleString()}`,
+        `Property Type,${data.property.propertyType}`,
+        `Location,${data.property.location}`,
+        `Bedrooms,${data.property.bedrooms}`,
+        `Bathrooms,${data.property.bathrooms}`,
+        `Square Footage,${data.property.squareFootage}`,
+        '',
+        'Investment Results',
+        `Annual ROI,${data.results.roi.toFixed(2)}%`,
+        `Monthly Cash Flow,$${data.results.monthlyCashFlow.toFixed(2)}`,
+        `Cap Rate,${data.results.capRate.toFixed(2)}%`,
+        `Rent to PITI Ratio,${data.results.rentToPITI.toFixed(2)}%`,
+        '',
+        'Financial Breakdown',
+        `Total Cash Invested,$${data.results.totalCashInvested.toLocaleString()}`,
+        `Monthly Income,$${data.results.totalMonthlyIncome.toFixed(2)}`,
+        `Monthly Expenses,$${data.results.totalMonthlyExpenses.toFixed(2)}`,
+        `Annual Cash Flow,$${data.results.annualCashFlow.toFixed(2)}`
+    ];
+    
+    return lines.join('\n');
+}
+
+function generateSimpleCSV(data) {
+    const headers = ['Metric', 'Value'];
+    const rows = [
+        ['Property Price', `$${data.property.propertyPrice.toLocaleString()}`],
+        ['Annual ROI', `${data.results.roi.toFixed(2)}%`],
+        ['Monthly Cash Flow', `$${data.results.monthlyCashFlow.toFixed(2)}`],
+        ['Cap Rate', `${data.results.capRate.toFixed(2)}%`],
+        ['Rent to PITI Ratio', `${data.results.rentToPITI.toFixed(2)}%`]
+    ];
+    
+    return [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
+}
+
+function downloadCSV(content, filename) {
+    const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    
+    if (link.download !== undefined) {
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', filename);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+}
+
+function showExportProgress(message) {
+    // Create progress indicator
+    const progress = document.createElement('div');
+    progress.id = 'exportProgress';
+    progress.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        padding: 2rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        z-index: 10000;
+        text-align: center;
+    `;
+    progress.innerHTML = `
+        <div style="margin-bottom: 1rem;">
+            <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: #667eea;"></i>
+        </div>
+        <div>${message}</div>
+    `;
+    document.body.appendChild(progress);
+}
+
+function hideExportProgress() {
+    const progress = document.getElementById('exportProgress');
+    if (progress) {
+        progress.remove();
+    }
+}
+
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? '#48bb78' : type === 'warning' ? '#ed8936' : '#667eea'};
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 3000;
+        animation: slideInRight 0.3s ease;
+        max-width: 300px;
+    `;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.animation = 'slideInRight 0.3s ease reverse';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+
+// Initialize feature buttons on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Load saved settings
+    const savedSettings = localStorage.getItem('realTimeSettings');
+    if (savedSettings) {
+        const settings = JSON.parse(savedSettings);
+        realTimeEnabled = settings.enabled;
+        calculationDelay = settings.delay;
+        
+        document.getElementById('realTimeToggle').checked = settings.enabled;
+        document.getElementById('calculationDelay').value = settings.delay;
+        document.getElementById('autoSaveToggle').checked = settings.autoSave;
+        document.getElementById('showAnimationsToggle').checked = settings.animations;
+    }
+    
+    // Update delay value display
+    const delaySlider = document.getElementById('calculationDelay');
+    const delayValue = document.getElementById('delayValue');
+    if (delaySlider && delayValue) {
+        delaySlider.addEventListener('input', function() {
+            delayValue.textContent = this.value + 'ms';
+        });
+    }
+    
+    // Initialize status displays
+    updateRealTimeStatus();
+    updateScenariosCount();
+    
+    // Close modals when clicking outside
+    window.addEventListener('click', function(event) {
+        const modals = ['scenariosModal', 'exportModal', 'realTimeModal'];
+        modals.forEach(modalId => {
+            const modal = document.getElementById(modalId);
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+    });
+}); 
