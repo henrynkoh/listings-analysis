@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Property Detection System Tester | Seattle REI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            padding: 2rem;
+        }
+
+        .input-section {
+            background: #f8f9fa;
+            padding: 2rem;
+            border-radius: 15px;
+            border: 2px solid #e9ecef;
+        }
+
+        .results-section {
+            background: #ffffff;
+            padding: 2rem;
+            border-radius: 15px;
+            border: 2px solid #e9ecef;
+            min-height: 500px;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        .detection-result {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .characteristic-card {
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .characteristic-card.positive {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border-color: #28a745;
+        }
+
+        .characteristic-card.negative {
+            background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+            color: white;
+            border-color: #dc3545;
+        }
+
+        .characteristic-card.uncertain {
+            background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+            color: white;
+            border-color: #ffc107;
+        }
+
+        .characteristic-card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .characteristic-card .result {
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 0.5rem 0;
+        }
+
+        .characteristic-card .confidence {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .reasons-section {
+            margin-top: 2rem;
+        }
+
+        .reasons-section h3 {
+            color: #495057;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .reason-category {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .reason-category h4 {
+            color: #667eea;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .reason-category ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .reason-category li {
+            padding: 0.3rem 0;
+            color: #495057;
+            position: relative;
+            padding-left: 1.5rem;
+        }
+
+        .reason-category li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .test-cases {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: #e3f2fd;
+            border-radius: 12px;
+            border: 2px solid #2196f3;
+        }
+
+        .test-cases h3 {
+            color: #1976d2;
+            margin-bottom: 1rem;
+        }
+
+        .test-case-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+        }
+
+        .test-case-btn {
+            padding: 0.5rem 1rem;
+            background: #2196f3;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.3s ease;
+        }
+
+        .test-case-btn:hover {
+            background: #1976d2;
+        }
+
+        .error-message {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #6c757d;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 4px solid #667eea;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .detection-result {
+                grid-template-columns: 1fr;
+            }
+            
+            .test-case-buttons {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🔍 Property Detection System Tester</h1>
+            <p>Test and validate the Multi-Family, Detached, and Large Garage detection algorithms</p>
+        </header>
+
+        <div class="main-content">
+            <div class="input-section">
+                <h2>Property Data Input</h2>
+                
+                <form id="propertyTestForm">
+                    <div class="form-group">
+                        <label for="propertyType">Property Type</label>
+                        <select id="propertyType" name="PropertyType">
+                            <option value="RESI">Residential (RESI)</option>
+                            <option value="COND">Condominium (COND)</option>
+                            <option value="MULT">Multi-Family (MULT)</option>
+                            <option value="DUPLEX">Duplex</option>
+                            <option value="TRIPLEX">Triplex</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="listPrice">List Price ($)</label>
+                        <input type="number" id="listPrice" name="ListPrice" placeholder="750000">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="squareFeet">Square Feet</label>
+                        <input type="number" id="squareFeet" name="SquareFeet" placeholder="2000">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="garageSpaces">Garage Spaces</label>
+                        <input type="number" id="garageSpaces" name="GarageSpaces" placeholder="2" min="0" max="10">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="lotSize">Lot Size (acres)</label>
+                        <input type="number" id="lotSize" name="LotSize" step="0.01" placeholder="0.25">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="hoaDues">HOA Dues ($/month)</label>
+                        <input type="number" id="hoaDues" name="HOADues" placeholder="0">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="numberOfUnits">Number of Units</label>
+                        <input type="number" id="numberOfUnits" name="NumberOfUnits" placeholder="1" min="1">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="publicRemarks">Public Remarks</label>
+                        <textarea id="publicRemarks" name="PublicRemarks" placeholder="Beautiful single family home with detached 2 car garage..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="style">Property Style</label>
+                        <input type="text" id="style" name="Style" placeholder="Traditional, Rambler, etc.">
+                    </div>
+
+                    <div class="button-group">
+                        <button type="submit" class="btn btn-primary">
+                            🧪 Analyze Property
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="clearForm()">
+                            🗑️ Clear Form
+                        </button>
+                    </div>
+                </form>
+
+                <div class="test-cases">
+                    <h3>🎯 Quick Test Cases</h3>
+                    <div class="test-case-buttons">
+                        <button class="test-case-btn" onclick="loadTestCase('duplex')">Obvious Duplex</button>
+                        <button class="test-case-btn" onclick="loadTestCase('single_family')">Single Family</button>
+                        <button class="test-case-btn" onclick="loadTestCase('condo')">Condominium</button>
+                        <button class="test-case-btn" onclick="loadTestCase('large_garage')">Large Garage</button>
+                        <button class="test-case-btn" onclick="loadTestCase('investment')">Investment Property</button>
+                        <button class="test-case-btn" onclick="loadTestCase('townhouse')">Townhouse</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="results-section">
+                <h2>Detection Results</h2>
+                <div id="resultsContainer">
+                    <p style="text-align: center; color: #6c757d; margin-top: 2rem;">
+                        Enter property data and click "Analyze Property" to see detection results.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Test case data
+        const testCases = {
+            duplex: {
+                PropertyType: 'MULT',
+                ListPrice: 850000,
+                SquareFeet: 2400,
+                GarageSpaces: 2,
+                LotSize: 0.18,
+                HOADues: 0,
+                NumberOfUnits: 2,
+                PublicRemarks: 'Beautiful duplex with separate entrances and utilities. Great investment property with rental income potential.',
+                Style: 'Traditional'
+            },
+            single_family: {
+                PropertyType: 'RESI',
+                ListPrice: 750000,
+                SquareFeet: 2000,
+                GarageSpaces: 2,
+                LotSize: 0.25,
+                HOADues: 0,
+                NumberOfUnits: 1,
+                PublicRemarks: 'Beautiful detached single family home with private yard and 2 car garage.',
+                Style: 'Rambler'
+            },
+            condo: {
+                PropertyType: 'COND',
+                ListPrice: 450000,
+                SquareFeet: 1200,
+                GarageSpaces: 1,
+                LotSize: 0,
+                HOADues: 350,
+                NumberOfUnits: 1,
+                PublicRemarks: 'Modern condominium with shared amenities and parking garage.',
+                Style: 'High-Rise'
+            },
+            large_garage: {
+                PropertyType: 'RESI',
+                ListPrice: 950000,
+                SquareFeet: 2800,
+                GarageSpaces: 3,
+                LotSize: 0.30,
+                HOADues: 0,
+                NumberOfUnits: 1,
+                PublicRemarks: 'Luxury home with oversized 3 car garage and workshop space.',
+                Style: 'Contemporary'
+            },
+            investment: {
+                PropertyType: 'RESI',
+                ListPrice: 675000,
+                SquareFeet: 1800,
+                GarageSpaces: 2,
+                LotSize: 0.20,
+                HOADues: 0,
+                NumberOfUnits: 1,
+                PublicRemarks: 'Great investment property with mother-in-law suite and ADU potential. Excellent rental income opportunity.',
+                Style: 'Traditional'
+            },
+            townhouse: {
+                PropertyType: 'RESI',
+                ListPrice: 550000,
+                SquareFeet: 1600,
+                GarageSpaces: 1,
+                LotSize: 0.05,
+                HOADues: 200,
+                NumberOfUnits: 1,
+                PublicRemarks: 'Beautiful townhouse with shared wall and private patio.',
+                Style: 'Townhouse'
+            }
+        };
+
+        function loadTestCase(caseType) {
+            const testCase = testCases[caseType];
+            if (!testCase) return;
+
+            // Populate form fields
+            Object.keys(testCase).forEach(key => {
+                const element = document.querySelector(`[name="${key}"]`);
+                if (element) {
+                    element.value = testCase[key];
+                }
+            });
+
+            // Auto-analyze
+            setTimeout(() => {
+                analyzeProperty(testCase);
+            }, 500);
+        }
+
+        function clearForm() {
+            document.getElementById('propertyTestForm').reset();
+            document.getElementById('resultsContainer').innerHTML = `
+                <p style="text-align: center; color: #6c757d; margin-top: 2rem;">
+                    Enter property data and click "Analyze Property" to see detection results.
+                </p>
+            `;
+        }
+
+        document.getElementById('propertyTestForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const propertyData = {};
+            
+            for (let [key, value] of formData.entries()) {
+                if (value !== '') {
+                    // Convert numeric fields
+                    if (['ListPrice', 'SquareFeet', 'GarageSpaces', 'LotSize', 'HOADues', 'NumberOfUnits'].includes(key)) {
+                        propertyData[key] = parseFloat(value) || 0;
+                    } else {
+                        propertyData[key] = value;
+                    }
+                }
+            }
+
+            analyzeProperty(propertyData);
+        });
+
+        async function analyzeProperty(propertyData) {
+            const resultsContainer = document.getElementById('resultsContainer');
+            
+            // Show loading state
+            resultsContainer.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Analyzing property characteristics...</p>
+                </div>
+            `;
+
+            try {
+                const response = await fetch('/api/analyze-property', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(propertyData)
+                });
+
+                const result = await response.json();
+                displayResults(result, propertyData);
+
+            } catch (error) {
+                console.error('Analysis error:', error);
+                
+                // Fallback: use frontend analysis
+                const frontendResult = analyzePropertyFrontend(propertyData);
+                displayResults(frontendResult, propertyData);
+            }
+        }
+
+        function analyzePropertyFrontend(propertyData) {
+            // Simplified frontend analysis for demo purposes
+            const result = {
+                isMultiFamily: false,
+                isDetached: false,
+                hasLargeGarage: false,
+                confidence: { multi_family: 0, detached: 0, large_garage: 0 },
+                reasons: { multi_family: [], detached: [], large_garage: [] }
+            };
+
+            // Multi-family detection
+            const multiTypes = ['MULT', 'DUPLEX', 'TRIPLEX'];
+            if (multiTypes.includes(propertyData.PropertyType)) {
+                result.isMultiFamily = true;
+                result.confidence.multi_family = 0.9;
+                result.reasons.multi_family.push(`Property type: ${propertyData.PropertyType}`);
+            }
+
+            if (propertyData.NumberOfUnits > 1) {
+                result.isMultiFamily = true;
+                result.confidence.multi_family = Math.max(result.confidence.multi_family, 0.8);
+                result.reasons.multi_family.push(`Number of units: ${propertyData.NumberOfUnits}`);
+            }
+
+            const remarks = (propertyData.PublicRemarks || '').toLowerCase();
+            const multiKeywords = ['duplex', 'triplex', 'investment property', 'rental income'];
+            multiKeywords.forEach(keyword => {
+                if (remarks.includes(keyword)) {
+                    result.confidence.multi_family += 0.3;
+                    result.reasons.multi_family.push(`Description contains: ${keyword}`);
+                }
+            });
+
+            result.isMultiFamily = result.confidence.multi_family >= 0.5;
+
+            // Detached detection
+            if (propertyData.PropertyType === 'RESI') {
+                result.confidence.detached = 0.6;
+                result.reasons.detached.push('Property type: Residential');
+            } else if (propertyData.PropertyType === 'COND') {
+                result.confidence.detached = 0.0;
+                result.reasons.detached.push('Property type: Condo (not detached)');
+            }
+
+            if (propertyData.HOADues > 0) {
+                result.confidence.detached -= 0.2;
+                result.reasons.detached.push(`HOA dues: $${propertyData.HOADues}`);
+            }
+
+            if (propertyData.LotSize > 0.15) {
+                result.confidence.detached += 0.3;
+                result.reasons.detached.push(`Large lot: ${propertyData.LotSize} acres`);
+            }
+
+            result.isDetached = result.confidence.detached >= 0.5;
+
+            // Large garage detection
+            if (propertyData.GarageSpaces >= 2) {
+                result.hasLargeGarage = true;
+                result.confidence.large_garage = 0.8;
+                result.reasons.large_garage.push(`Garage spaces: ${propertyData.GarageSpaces}`);
+            }
+
+            if (propertyData.ListPrice > 800000) {
+                result.confidence.large_garage += 0.2;
+                result.reasons.large_garage.push('High-value property');
+            }
+
+            result.hasLargeGarage = result.confidence.large_garage >= 0.5;
+
+            return result;
+        }
+
+        function displayResults(result, propertyData) {
+            const resultsContainer = document.getElementById('resultsContainer');
+            
+            const getCardClass = (isPositive, confidence) => {
+                if (confidence < 0.3) return 'uncertain';
+                return isPositive ? 'positive' : 'negative';
+            };
+
+            const formatConfidence = (confidence) => {
+                return Math.round(confidence * 100);
+            };
+
+            resultsContainer.innerHTML = `
+                <div class="detection-result">
+                    <div class="characteristic-card ${getCardClass(result.isMultiFamily, result.confidence.multi_family)}">
+                        <h3>Multi-Family</h3>
+                        <div class="result">${result.isMultiFamily ? 'YES' : 'NO'}</div>
+                        <div class="confidence">${formatConfidence(result.confidence.multi_family)}% confidence</div>
+                    </div>
+                    <div class="characteristic-card ${getCardClass(result.isDetached, result.confidence.detached)}">
+                        <h3>Detached</h3>
+                        <div class="result">${result.isDetached ? 'YES' : 'NO'}</div>
+                        <div class="confidence">${formatConfidence(result.confidence.detached)}% confidence</div>
+                    </div>
+                    <div class="characteristic-card ${getCardClass(result.hasLargeGarage, result.confidence.large_garage)}">
+                        <h3>Large Garage</h3>
+                        <div class="result">${result.hasLargeGarage ? 'YES' : 'NO'}</div>
+                        <div class="confidence">${formatConfidence(result.confidence.large_garage)}% confidence</div>
+                    </div>
+                </div>
+
+                ${result.reasons ? `
+                    <div class="reasons-section">
+                        <h3>Detection Reasoning</h3>
+                        
+                        ${result.reasons.multi_family && result.reasons.multi_family.length > 0 ? `
+                            <div class="reason-category">
+                                <h4>Multi-Family Detection</h4>
+                                <ul>
+                                    ${result.reasons.multi_family.map(reason => `<li>${reason}</li>`).join('')}
+                                </ul>
+                            </div>
+                        ` : ''}
+                        
+                        ${result.reasons.detached && result.reasons.detached.length > 0 ? `
+                            <div class="reason-category">
+                                <h4>Detached Detection</h4>
+                                <ul>
+                                    ${result.reasons.detached.map(reason => `<li>${reason}</li>`).join('')}
+                                </ul>
+                            </div>
+                        ` : ''}
+                        
+                        ${result.reasons.large_garage && result.reasons.large_garage.length > 0 ? `
+                            <div class="reason-category">
+                                <h4>Large Garage Detection</h4>
+                                <ul>
+                                    ${result.reasons.large_garage.map(reason => `<li>${reason}</li>`).join('')}
+                                </ul>
+                            </div>
+                        ` : ''}
+                    </div>
+                ` : ''}
+
+                <div style="margin-top: 2rem; padding: 1rem; background: #f8f9fa; border-radius: 8px; font-size: 0.9rem;">
+                    <strong>Input Summary:</strong><br>
+                    Type: ${propertyData.PropertyType || 'Not specified'} | 
+                    Price: $${propertyData.ListPrice?.toLocaleString() || 'Not specified'} | 
+                    Garage: ${propertyData.GarageSpaces || 0} spaces | 
+                    Lot: ${propertyData.LotSize || 0} acres
+                </div>
+            `;
+        }
+
+        // Load a default test case on page load
+        window.addEventListener('load', () => {
+            loadTestCase('single_family');
+        });
+    </script>
+</body>
+</html> 
